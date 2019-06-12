@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+
+<pou>
+	<path/>
+	<name>testParam</name>
+	<flags>59392</flags>
+	<interface>
+		<![CDATA[FUNCTION testParam :DINT
+(* Created by FlorianH 25.05.2017, Modified by FlorianH 05.07.2018 *)
+(* Sets a specific parameter for the testing framework *)
+VAR_INPUT
+	Param: BYTE;
+	Value: DINT;
+END_VAR
+{library private on}
+VAR
+	fCount : POINTER TO USINT;
+	lCount : USINT;
+END_VAR
+{library private off}
+]]>
+	</interface>
+	<st>
+		<body>
+			<![CDATA[(* Todo Better Checks for assertion memory positions *)
+IF TestCase.tCase > 0 THEN
+	(* Delay from secs to milisecs *)
+	CASE Param OF
+		pTESTS : TestCase.tCase^.TestCount := DINT_TO_BYTE(LIMIT (1, Value, 255));
+		pSTEPS : TestCase.tCase^.TestSteps := DINT_TO_BYTE(LIMIT (1, Value, 255));
+		pSTIME : IF (TestCase.tCase^.State AND 16#F) = sT_RUN THEN
+					(* sets the timeout or mimum execution time for a step *)
+					TestCase.tCase^.EndTime := Value;
+				 ELSE
+					testParam := -2;
+				 END_IF
+
+		pWTIME : IF (TestCase.tCase^.State AND 16#F) = sT_INIT THEN
+					(* Sets end time to a future moment so to make the execution wait *)
+					IF _delayIsTime THEN
+						TestCase.tCase^.EndTime := TIME_TO_UDINT(TestCase.tCase^.StartTime) + Value;
+					ELSE
+						TestCase.tCase^.EndTime := Value;
+					END_IF
+				 ELSE
+					testParam := -2;
+				 END_IF
+		pREADY : IF (TestCase.tCase^.State AND 16#F) = sT_INIT
+					OR (TestCase.tCase^.State AND 16#F) = sT_DEINIT
+					OR (TestCase.tCase^.State AND 16#F) = sTC_INIT
+					OR (TestCase.tCase^.State AND 16#F) = sTC_DEINIT THEN
+
+
+					TestCase.tCase^.EndTime := DINT_TO_DWORD(LIMIT(0,Value,1)-1);
+				 ELSE
+					testParam := -2;
+				 END_IF
+		pGETN  :	fCount := ADR(TestCase.FieldCounter);
+					lCount := (TestCase.tCase^.TestCount-1) / MAX(fCount^,1);
+					fCount^ := fCount^ * DINT_TO_USINT(Value);
+					testParam := lCount MOD DINT_TO_USINT(Value) + 1;
+	END_CASE
+	RETURN;
+END_IF
+(* Exception *)
+testParam := -1;
+
+]]>
+		</body>
+	</st>
+</pou>

@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+
+<pou>
+	<path><![CDATA[\/External Functions]]></path>
+	<name>SysMemSet</name>
+	<flags>59392</flags>
+	<interface>
+		<![CDATA[FUNCTION SysMemSet : DWORD
+(* Created 01.04.10 by FlorianH, last change 01.04.10 by FlorianH *)
+(* Sets a buffers to a char. *)
+(* returns the value of dwDest. *)
+
+VAR_INPUT
+	dwDest		: DWORD;	(* buffer *)
+	bCharacter	: BYTE;		(* Byte To write *)
+	dwCount		: DWORD;	(* Number of characters to preset *)
+END_VAR
+{library private on}
+VAR
+	actCount	: DWORD;			(* Counter *)
+	PtOUT		: POINTER TO BYTE;	(* pointer to Bufferpos *)
+END_VAR
+{library private off}
+]]>
+	</interface>
+	<st>
+		<body>
+			<![CDATA[(* Check if addresses are ok *)
+IF dwDest = 0 OR dwCount = 0 THEN
+	SysMemSet :=0;
+	RETURN;
+END_IF
+
+actCount := 0;
+REPEAT
+
+	PtOUT := dwDest + actCount;
+	PtOUT^ := bCharacter;
+
+	actCount := ActCount +1;
+UNTIL actCount >= dwCount END_REPEAT
+
+SysMemSet := dwDest;]]>
+		</body>
+	</st>
+</pou>

@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+
+<pou>
+	<path/>
+	<name>testTime</name>
+	<flags>59392</flags>
+	<interface>
+		<![CDATA[FUNCTION testTime : DWORD
+(* Created by FlorianH 05.08.2016, Modified by FlorianH 26.06.2017 *)
+(* Returns the actual elapsed time/cycles since test start *)]]>
+	</interface>
+	<st>
+		<body>
+			<![CDATA[IF TestCase.tCase > 0 THEN
+	IF _delayIsTime THEN
+		testTime := TIME_TO_DWORD(TIME() - TestCase.tCase^.StartTime);
+	ELSE
+		testTime := TestCase.tCase^.ExecCounter;
+	END_IF
+	RETURN;
+END_IF
+testTime := 0;]]>
+		</body>
+	</st>
+</pou>

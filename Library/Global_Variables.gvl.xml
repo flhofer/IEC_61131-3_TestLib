@@ -1,0 +1,118 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+
+<gvl>
+	<path/>
+	<name>Global_Variables</name>
+	<flags>59392</flags>
+	<symbol-info>
+		<variable name="RND_Key" flags="59392"/>
+		<variable name="_tlp_" flags="59392"/>
+		<variable name="_tls_" flags="59392"/>
+		<variable name="RND_Seed" flags="59392"/>
+		<variable name="_tlt_" flags="59392"/>
+	</symbol-info>
+	<interface>
+		<![CDATA[VAR_GLOBAL
+	(* output log *)
+	testLogP	: POINTER TO ARRAY[1.._tl_testMessages] OF STRING(25);
+END_VAR
+VAR_GLOBAL CONSTANT
+(* Library - Comment from here *)
+	(* user parameters *)
+	_tl_assertsPerTest	: INT := 3;
+	_tl_testCases		: INT := 9;
+	_tl_testMessages	: INT := 63;
+	_delayScale			: INT := 1;	(* example 1 for ms, 1000 for sec, or simply multiplier of cycles *)
+	_delayIsTime		: BOOL := FALSE; (* Execution time delay or execution counter delay selection *)
+(* Comment until here *)
+
+	(* ------------- STATE MACHINE ------------- *)
+	(* States for the state machines, Test case and test *)
+	sTC_ND		: BYTE :=16#00;
+
+	(* Test Startup *)
+	sT_INIT		: BYTE :=16#01;
+	sT_WAIT		: BYTE :=16#02;
+	sT_START	: BYTE :=16#03;
+	sT_RUN		: BYTE :=16#04;
+
+	(* Test Shutdown *)
+	sT_ABORT	: BYTE :=16#08;
+	sT_STOP		: BYTE :=16#09;
+	sT_END		: BYTE :=16#0A;
+	sT_DEINIT	: BYTE :=16#0B;
+
+	(* Test Results *)
+	sT_PASS		: BYTE :=16#0C;
+	sT_FAIL		: BYTE :=16#0D;
+	sT_ERROR	: BYTE :=16#0E;
+
+	(* Test Case Startup *)
+	sTC_INIT	: BYTE :=16#10;
+	sTC_WAIT	: BYTE :=16#20;
+	sTC_START	: BYTE :=16#30;
+	sTC_RUN		: BYTE :=16#40;
+
+
+	(* Test Case Shutdown *)
+	sTC_ABORT	: BYTE :=16#80;
+	sTC_STOP	: BYTE :=16#90;
+	sTC_END		: BYTE :=16#A0;
+	sTC_DEINIT	: BYTE :=16#B0;
+
+	(* Test case Results *)
+	sTC_PASS	: BYTE :=16#C0;
+	sTC_FAIL	: BYTE :=16#D0;
+	sTC_ERROR	: BYTE :=16#E0;
+
+	(* Parameters for settings of test cases *)
+	pTESTS		: BYTE := 0;	(* sets the number of tests in this test case/suite, default = 1 *)
+	pSTEPS		: BYTE := 1;	(* sets the number of steps in this test, default = 1 *)
+	pWTIME		: BYTE := 2;	(* sets the waiting time fot the startup *)
+	pSTIME		: BYTE := 3;	(* sets the step time, timeout value for this step, default last assert *)
+	pREADY		: BYTE := 4;	(* preps ready, 0 = false, 1 = true, default = true *)
+	pGETN		: BYTE := 5; 	(* get continuous array number based on sizes of generated arrays *)
+
+	(* Parameters for GenArray, setting of mode *)
+	tRndReal	: DINT := 1;
+	tRndDint	: DINT := 2;
+	tLinReal	: DINT := 3;
+	tLinDint	: DINT := 4;
+	tTupReal	: DINT := 5;
+	tTupDint	: DINT := 6;
+
+	(* Parameters for asserts, setting of verification type *)
+	mEQ			: DWORD := 16#0000000;
+	mLT			: DWORD := 16#1000000;
+	mGT			: DWORD := 16#2000000;
+	mLEQ		: DWORD := 16#3000000;
+	mGEQ		: DWORD := 16#4000000;
+	mBTW		: DWORD := 16#5000000; (* not implemented yet *)
+	mVFY		: DWORD := 16#00000000;
+	mBEFORE		: DWORD := 16#10000000;
+	mAFTER		: DWORD := 16#20000000;
+	mAT			: DWORD := 16#30000000;
+	mBFRNG		: DWORD := 16#50000000;
+	mAFTRNG		: DWORD := 16#60000000;
+	mATRNG		: DWORD := 16#70000000;
+	(* bits for mode masks *)
+	bBefore		: INT := 28;
+	bAfter		: INT := 29;
+	bRange		: INT := 30;
+END_VAR
+
+VAR_GLOBAL
+	_tls_		: USINT := 1; (* Global variable, actual test status *)
+	_tlt_		: USINT := 1; (* Global variable, actual test number *)
+	_tlp_		: USINT := 1; (* Global variable, actual test point/step *)
+
+(* InitVals for Randomize *)
+	RND_Seed: DWORD := 55342564 ;
+	RND_Key : DWORD := 25449541;
+END_VAR
+]]>
+	</interface>
+	<file-name><![CDATA[]]></file-name>
+	<file-time>0</file-time>
+	<exp-imp>false</exp-imp>
+</gvl>

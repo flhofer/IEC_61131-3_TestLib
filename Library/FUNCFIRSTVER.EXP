@@ -1,0 +1,782 @@
+
+
+(* @NESTEDCOMMENTS := 'Yes' *)
+(* @PATH := '\/Assert functions' *)
+(* @OBJECTFLAGS := '0, 8' *)
+(* @SYMFILEFLAGS := '2048' *)
+FUNCTION ASSERT_BETWEEN : BOOL
+VAR_INPUT
+	AV: REAL;
+	V1: REAL;
+	V2: REAL;
+END_VAR
+VAR
+END_VAR
+(* @END_DECLARATION := '0' *)
+ASSERT_BETWEEN := ASSERT_GTE ( AV := AV, EV := V1 )
+	AND ASSERT_LTE ( AV := AV, EV := V2 );
+END_FUNCTION
+
+
+(* @NESTEDCOMMENTS := 'Yes' *)
+(* @PATH := '\/Assert functions' *)
+(* @OBJECTFLAGS := '0, 8' *)
+(* @SYMFILEFLAGS := '2048' *)
+FUNCTION_BLOCK ASSERT_BETWEEN_D
+VAR_INPUT
+	AV: REAL;
+	V1: REAL;
+	V2: REAL;
+	D : TIME;
+END_VAR
+VAR_OUTPUT
+	RESULT: BOOL;
+	READY : BOOL;
+END_VAR
+VAR
+	T_Delay	: TON;
+END_VAR
+(* @END_DECLARATION := '0' *)
+(* start timer imediately *)
+T_Delay ( IN := TRUE, PT := D );
+
+(* be shure to run the test only once with ready signal *)
+IF T_Delay.Q AND NOT READY THEN
+	RESULT := ASSERT_BETWEEN ( AV := AV, V1 := V1, V2 := V2);
+	READY := TRUE;
+END_IF
+
+END_FUNCTION_BLOCK
+
+
+(* @NESTEDCOMMENTS := 'Yes' *)
+(* @PATH := '\/Assert functions' *)
+(* @OBJECTFLAGS := '0, 8' *)
+(* @SYMFILEFLAGS := '2048' *)
+FUNCTION_BLOCK ASSERT_BETWEEN_D_I
+VAR_INPUT
+	AV: DINT;
+	V1: DINT;
+	V2: DINT;
+	D : TIME;
+END_VAR
+VAR_OUTPUT
+	RESULT: BOOL;
+	READY : BOOL;
+END_VAR
+VAR
+	T_Delay	: TON;
+END_VAR
+(* @END_DECLARATION := '0' *)
+(* start timer imediately *)
+T_Delay ( IN := TRUE, PT := D );
+
+(* be shure to run the test only once with ready signal *)
+IF T_Delay.Q AND NOT READY THEN
+	RESULT := ASSERT_BETWEEN_I ( AV := AV, V1 := V1, V2 := V2);
+	READY := TRUE;
+END_IF
+
+END_FUNCTION_BLOCK
+
+
+(* @NESTEDCOMMENTS := 'Yes' *)
+(* @PATH := '\/Assert functions' *)
+(* @OBJECTFLAGS := '0, 8' *)
+(* @SYMFILEFLAGS := '2048' *)
+FUNCTION ASSERT_BETWEEN_I : BOOL
+VAR_INPUT
+	AV: DINT;
+	V1: DINT;
+	V2: DINT;
+END_VAR
+VAR
+END_VAR
+(* @END_DECLARATION := '0' *)
+ASSERT_BETWEEN_I := ASSERT_GTE_I ( AV := AV, EV := V1 )
+	AND ASSERT_LTE_I ( AV := AV, EV := V2 );
+END_FUNCTION
+
+
+(* @NESTEDCOMMENTS := 'Yes' *)
+(* @PATH := '\/Assert functions' *)
+(* @OBJECTFLAGS := '0, 8' *)
+(* @SYMFILEFLAGS := '2048' *)
+FUNCTION ASSERT_EQ : BOOL
+VAR_INPUT
+	AV: REAL;
+	EV: REAL;
+END_VAR
+VAR
+END_VAR
+(* @END_DECLARATION := '0' *)
+ASSERT_EQ := ASSERT_ISTRUE( AV:= AV = EV );
+
+END_FUNCTION
+
+
+(* @NESTEDCOMMENTS := 'Yes' *)
+(* @PATH := '\/Assert functions' *)
+(* @OBJECTFLAGS := '0, 8' *)
+(* @SYMFILEFLAGS := '2048' *)
+FUNCTION ASSERT_EQ_B : BOOL
+VAR_INPUT
+	AV: BOOL;
+	EV: BOOL;
+END_VAR
+VAR
+END_VAR
+(* @END_DECLARATION := '0' *)
+ASSERT_EQ_B := ASSERT_ISTRUE( AV:= AV = EV );
+
+END_FUNCTION
+
+
+(* @NESTEDCOMMENTS := 'Yes' *)
+(* @PATH := '\/Assert functions' *)
+(* @OBJECTFLAGS := '0, 8' *)
+(* @SYMFILEFLAGS := '2048' *)
+FUNCTION_BLOCK ASSERT_EQ_D
+VAR_INPUT
+	AV: REAL;
+	EV: REAL;
+	D : TIME;
+END_VAR
+VAR_OUTPUT
+	RESULT: BOOL;
+	READY : BOOL;
+END_VAR
+VAR
+	T_Delay	: TON;
+END_VAR
+(* @END_DECLARATION := '0' *)
+(* start timer imediately *)
+T_Delay ( IN := TRUE, PT := D );
+
+(* be shure to run the test only once with ready signal *)
+IF T_Delay.Q AND NOT READY THEN
+	RESULT := ASSERT_EQ ( AV := AV, EV := EV);
+	READY := TRUE;
+END_IF
+
+END_FUNCTION_BLOCK
+
+
+(* @NESTEDCOMMENTS := 'Yes' *)
+(* @PATH := '\/Assert functions' *)
+(* @OBJECTFLAGS := '0, 8' *)
+(* @SYMFILEFLAGS := '2048' *)
+FUNCTION_BLOCK ASSERT_EQ_D_I
+VAR_INPUT
+	AV: DINT;
+	EV: DINT;
+	D : TIME;
+END_VAR
+VAR_OUTPUT
+	RESULT: BOOL;
+	READY : BOOL;
+END_VAR
+VAR
+	T_Delay	: TON;
+END_VAR
+(* @END_DECLARATION := '0' *)
+(* start timer imediately *)
+T_Delay ( IN := TRUE, PT := D );
+
+(* be shure to run the test only once with ready signal *)
+IF T_Delay.Q AND NOT READY THEN
+	RESULT := ASSERT_EQ_I ( AV := AV, EV := EV);
+	READY := TRUE;
+END_IF
+
+END_FUNCTION_BLOCK
+
+
+(* @NESTEDCOMMENTS := 'Yes' *)
+(* @PATH := '\/Assert functions' *)
+(* @OBJECTFLAGS := '0, 8' *)
+(* @SYMFILEFLAGS := '2048' *)
+FUNCTION ASSERT_EQ_I : BOOL
+VAR_INPUT
+	AV: DINT;
+	EV: DINT;
+END_VAR
+VAR
+END_VAR
+(* @END_DECLARATION := '0' *)
+ASSERT_EQ_I := ASSERT_ISTRUE( AV:= AV = EV );
+
+END_FUNCTION
+
+
+(* @NESTEDCOMMENTS := 'Yes' *)
+(* @PATH := '\/Assert functions' *)
+(* @OBJECTFLAGS := '0, 8' *)
+(* @SYMFILEFLAGS := '2048' *)
+FUNCTION ASSERT_GT : BOOL
+VAR_INPUT
+	AV: REAL;
+	EV: REAL;
+END_VAR
+VAR
+END_VAR
+(* @END_DECLARATION := '0' *)
+ASSERT_GT := ASSERT_ISTRUE( AV:= AV > EV );
+
+END_FUNCTION
+
+
+(* @NESTEDCOMMENTS := 'Yes' *)
+(* @PATH := '\/Assert functions' *)
+(* @OBJECTFLAGS := '0, 8' *)
+(* @SYMFILEFLAGS := '2048' *)
+FUNCTION_BLOCK ASSERT_GT_D
+VAR_INPUT
+	AV: REAL;
+	EV: REAL;
+	D : TIME;
+END_VAR
+VAR_OUTPUT
+	RESULT: BOOL;
+	READY : BOOL;
+END_VAR
+VAR
+	T_Delay	: TON;
+END_VAR
+(* @END_DECLARATION := '0' *)
+(* start timer imediately *)
+T_Delay ( IN := TRUE, PT := D );
+
+(* be shure to run the test only once with ready signal *)
+IF T_Delay.Q AND NOT READY THEN
+	RESULT := ASSERT_GT ( AV := AV, EV := EV);
+	READY := TRUE;
+END_IF
+
+END_FUNCTION_BLOCK
+
+
+(* @NESTEDCOMMENTS := 'Yes' *)
+(* @PATH := '\/Assert functions' *)
+(* @OBJECTFLAGS := '0, 8' *)
+(* @SYMFILEFLAGS := '2048' *)
+FUNCTION_BLOCK ASSERT_GT_D_I
+VAR_INPUT
+	AV: DINT;
+	EV: DINT;
+	D : TIME;
+END_VAR
+VAR_OUTPUT
+	RESULT: BOOL;
+	READY : BOOL;
+END_VAR
+VAR
+	T_Delay	: TON;
+END_VAR
+(* @END_DECLARATION := '0' *)
+(* start timer imediately *)
+T_Delay ( IN := TRUE, PT := D );
+
+(* be shure to run the test only once with ready signal *)
+IF T_Delay.Q AND NOT READY THEN
+	RESULT := ASSERT_GT_I ( AV := AV, EV := EV);
+	READY := TRUE;
+END_IF
+
+END_FUNCTION_BLOCK
+
+
+(* @NESTEDCOMMENTS := 'Yes' *)
+(* @PATH := '\/Assert functions' *)
+(* @OBJECTFLAGS := '0, 8' *)
+(* @SYMFILEFLAGS := '2048' *)
+FUNCTION ASSERT_GT_I : BOOL
+VAR_INPUT
+	AV: DINT;
+	EV: DINT;
+END_VAR
+VAR
+END_VAR
+(* @END_DECLARATION := '0' *)
+ASSERT_GT_I := ASSERT_ISTRUE( AV:= AV > EV );
+
+END_FUNCTION
+
+
+(* @NESTEDCOMMENTS := 'Yes' *)
+(* @PATH := '\/Assert functions' *)
+(* @OBJECTFLAGS := '0, 8' *)
+(* @SYMFILEFLAGS := '2048' *)
+FUNCTION ASSERT_GTE : BOOL
+VAR_INPUT
+	AV: REAL;
+	EV: REAL;
+END_VAR
+VAR
+END_VAR
+(* @END_DECLARATION := '0' *)
+ASSERT_GTE := ASSERT_GT ( AV := AV, EV := EV )
+	OR ASSERT_EQ ( AV := AV, EV := EV );
+END_FUNCTION
+
+
+(* @NESTEDCOMMENTS := 'Yes' *)
+(* @PATH := '\/Assert functions' *)
+(* @OBJECTFLAGS := '0, 8' *)
+(* @SYMFILEFLAGS := '2048' *)
+FUNCTION_BLOCK ASSERT_GTE_D
+VAR_INPUT
+	AV: REAL;
+	EV: REAL;
+	D : TIME;
+END_VAR
+VAR_OUTPUT
+	RESULT: BOOL;
+	READY : BOOL;
+END_VAR
+VAR
+	T_Delay	: TON;
+END_VAR
+(* @END_DECLARATION := '0' *)
+(* start timer imediately *)
+T_Delay ( IN := TRUE, PT := D );
+
+(* be shure to run the test only once with ready signal *)
+IF T_Delay.Q AND NOT READY THEN
+	RESULT := ASSERT_GTE ( AV := AV, EV := EV);
+	READY := TRUE;
+END_IF
+
+END_FUNCTION_BLOCK
+
+
+(* @NESTEDCOMMENTS := 'Yes' *)
+(* @PATH := '\/Assert functions' *)
+(* @OBJECTFLAGS := '0, 8' *)
+(* @SYMFILEFLAGS := '2048' *)
+FUNCTION_BLOCK ASSERT_GTE_D_I
+VAR_INPUT
+	AV: DINT;
+	EV: DINT;
+	D : TIME;
+END_VAR
+VAR_OUTPUT
+	RESULT: BOOL;
+	READY : BOOL;
+END_VAR
+VAR
+	T_Delay	: TON;
+END_VAR
+(* @END_DECLARATION := '0' *)
+(* start timer imediately *)
+T_Delay ( IN := TRUE, PT := D );
+
+(* be shure to run the test only once with ready signal *)
+IF T_Delay.Q AND NOT READY THEN
+	RESULT := ASSERT_GTE_I ( AV := AV, EV := EV);
+	READY := TRUE;
+END_IF
+
+END_FUNCTION_BLOCK
+
+
+(* @NESTEDCOMMENTS := 'Yes' *)
+(* @PATH := '\/Assert functions' *)
+(* @OBJECTFLAGS := '0, 8' *)
+(* @SYMFILEFLAGS := '2048' *)
+FUNCTION ASSERT_GTE_I : BOOL
+VAR_INPUT
+	AV: DINT;
+	EV: DINT;
+END_VAR
+VAR
+END_VAR
+(* @END_DECLARATION := '0' *)
+ASSERT_GTE_I := ASSERT_GT_I ( AV := AV, EV := EV )
+	OR ASSERT_EQ_I ( AV := AV, EV := EV );
+END_FUNCTION
+
+
+(* @NESTEDCOMMENTS := 'Yes' *)
+(* @PATH := '\/Assert functions' *)
+(* @OBJECTFLAGS := '0, 8' *)
+(* @SYMFILEFLAGS := '2048' *)
+FUNCTION ASSERT_ISFALSE : BOOL
+VAR_INPUT
+	AV: BOOL;
+END_VAR
+(* @END_DECLARATION := '0' *)
+ASSERT_ISFALSE := NOT ASSERT_ISTRUE ( AV := AV );
+
+END_FUNCTION
+
+
+(* @NESTEDCOMMENTS := 'Yes' *)
+(* @PATH := '\/Assert functions' *)
+(* @OBJECTFLAGS := '0, 8' *)
+(* @SYMFILEFLAGS := '2048' *)
+FUNCTION_BLOCK ASSERT_ISFALSE_D
+VAR_INPUT
+	AV: BOOL;
+	D : TIME;
+END_VAR
+VAR_OUTPUT
+	RESULT: BOOL;
+	READY : BOOL;
+END_VAR
+VAR
+	T_Delay	: TON;
+END_VAR
+(* @END_DECLARATION := '0' *)
+(* start timer imediately *)
+T_Delay ( IN := TRUE, PT := D );
+
+(* be shure to run the test only once with ready signal *)
+IF T_Delay.Q AND NOT READY THEN
+	RESULT := ASSERT_ISFALSE ( AV := AV);
+	READY := TRUE;
+END_IF
+
+END_FUNCTION_BLOCK
+
+
+(* @NESTEDCOMMENTS := 'Yes' *)
+(* @PATH := '\/Assert functions' *)
+(* @OBJECTFLAGS := '0, 8' *)
+(* @SYMFILEFLAGS := '2048' *)
+FUNCTION ASSERT_ISTRUE : BOOL
+VAR_INPUT
+	AV: BOOL;
+END_VAR
+(* @END_DECLARATION := '0' *)
+ASSERT_ISTRUE := AV;
+
+END_FUNCTION
+
+
+(* @NESTEDCOMMENTS := 'Yes' *)
+(* @PATH := '\/Assert functions' *)
+(* @OBJECTFLAGS := '0, 8' *)
+(* @SYMFILEFLAGS := '2048' *)
+FUNCTION_BLOCK ASSERT_ISTRUE_D
+VAR_INPUT
+	AV: BOOL;
+	D : TIME;
+END_VAR
+VAR_OUTPUT
+	RESULT: BOOL;
+	READY : BOOL;
+END_VAR
+VAR
+	T_Delay	: TON;
+END_VAR
+(* @END_DECLARATION := '0' *)
+(* start timer imediately *)
+T_Delay ( IN := TRUE, PT := D );
+
+(* be shure to run the test only once with ready signal *)
+IF T_Delay.Q AND NOT READY THEN
+	RESULT := ASSERT_ISTRUE ( AV := AV);
+	READY := TRUE;
+END_IF
+
+END_FUNCTION_BLOCK
+
+
+(* @NESTEDCOMMENTS := 'Yes' *)
+(* @PATH := '\/Assert functions' *)
+(* @OBJECTFLAGS := '0, 8' *)
+(* @SYMFILEFLAGS := '2048' *)
+FUNCTION ASSERT_LT : BOOL
+VAR_INPUT
+	AV: REAL;
+	EV: REAL;
+END_VAR
+VAR
+END_VAR
+(* @END_DECLARATION := '0' *)
+ASSERT_LT := ASSERT_ISTRUE( AV:= AV < EV );
+
+END_FUNCTION
+
+
+(* @NESTEDCOMMENTS := 'Yes' *)
+(* @PATH := '\/Assert functions' *)
+(* @OBJECTFLAGS := '0, 8' *)
+(* @SYMFILEFLAGS := '2048' *)
+FUNCTION_BLOCK ASSERT_LT_D
+VAR_INPUT
+	AV: REAL;
+	EV: REAL;
+	D : TIME;
+END_VAR
+VAR_OUTPUT
+	RESULT: BOOL;
+	READY : BOOL;
+END_VAR
+VAR
+	T_Delay	: TON;
+END_VAR
+(* @END_DECLARATION := '0' *)
+(* start timer imediately *)
+T_Delay ( IN := TRUE, PT := D );
+
+(* be shure to run the test only once with ready signal *)
+IF T_Delay.Q AND NOT READY THEN
+	RESULT := ASSERT_LT ( AV := AV, EV := EV);
+	READY := TRUE;
+END_IF
+
+END_FUNCTION_BLOCK
+
+
+(* @NESTEDCOMMENTS := 'Yes' *)
+(* @PATH := '\/Assert functions' *)
+(* @OBJECTFLAGS := '0, 8' *)
+(* @SYMFILEFLAGS := '2048' *)
+FUNCTION_BLOCK ASSERT_LT_D_I
+VAR_INPUT
+	AV: DINT;
+	EV: DINT;
+	D : TIME;
+END_VAR
+VAR_OUTPUT
+	RESULT: BOOL;
+	READY : BOOL;
+END_VAR
+VAR
+	T_Delay	: TON;
+END_VAR
+(* @END_DECLARATION := '0' *)
+(* start timer imediately *)
+T_Delay ( IN := TRUE, PT := D );
+
+(* be shure to run the test only once with ready signal *)
+IF T_Delay.Q AND NOT READY THEN
+	RESULT := ASSERT_LT_I ( AV := AV, EV := EV);
+	READY := TRUE;
+END_IF
+
+END_FUNCTION_BLOCK
+
+
+(* @NESTEDCOMMENTS := 'Yes' *)
+(* @PATH := '\/Assert functions' *)
+(* @OBJECTFLAGS := '0, 8' *)
+(* @SYMFILEFLAGS := '2048' *)
+FUNCTION ASSERT_LT_I : BOOL
+VAR_INPUT
+	AV: DINT;
+	EV: DINT;
+END_VAR
+VAR
+END_VAR
+(* @END_DECLARATION := '0' *)
+ASSERT_LT_I := ASSERT_ISTRUE( AV:= AV < EV );
+
+END_FUNCTION
+
+
+(* @NESTEDCOMMENTS := 'Yes' *)
+(* @PATH := '\/Assert functions' *)
+(* @OBJECTFLAGS := '0, 8' *)
+(* @SYMFILEFLAGS := '2048' *)
+FUNCTION ASSERT_LTE : BOOL
+VAR_INPUT
+	AV: REAL;
+	EV: REAL;
+END_VAR
+VAR
+END_VAR
+(* @END_DECLARATION := '0' *)
+ASSERT_LTE := ASSERT_LT ( AV := AV, EV := EV )
+	OR ASSERT_EQ ( AV := AV, EV := EV );
+END_FUNCTION
+
+
+(* @NESTEDCOMMENTS := 'Yes' *)
+(* @PATH := '\/Assert functions' *)
+(* @OBJECTFLAGS := '0, 8' *)
+(* @SYMFILEFLAGS := '2048' *)
+FUNCTION_BLOCK ASSERT_LTE_D
+VAR_INPUT
+	AV: REAL;
+	EV: REAL;
+	D : TIME;
+END_VAR
+VAR_OUTPUT
+	RESULT: BOOL;
+	READY : BOOL;
+END_VAR
+VAR
+	T_Delay	: TON;
+END_VAR
+(* @END_DECLARATION := '0' *)
+(* start timer imediately *)
+T_Delay ( IN := TRUE, PT := D );
+
+(* be shure to run the test only once with ready signal *)
+IF T_Delay.Q AND NOT READY THEN
+	RESULT := ASSERT_LTE ( AV := AV, EV := EV);
+	READY := TRUE;
+END_IF
+
+END_FUNCTION_BLOCK
+
+
+(* @NESTEDCOMMENTS := 'Yes' *)
+(* @PATH := '\/Assert functions' *)
+(* @OBJECTFLAGS := '0, 8' *)
+(* @SYMFILEFLAGS := '2048' *)
+FUNCTION_BLOCK ASSERT_LTE_D_I
+VAR_INPUT
+	AV: DINT;
+	EV: DINT;
+	D : TIME;
+END_VAR
+VAR_OUTPUT
+	RESULT: BOOL;
+	READY : BOOL;
+END_VAR
+VAR
+	T_Delay	: TON;
+END_VAR
+(* @END_DECLARATION := '0' *)
+(* start timer imediately *)
+T_Delay ( IN := TRUE, PT := D );
+
+(* be shure to run the test only once with ready signal *)
+IF T_Delay.Q AND NOT READY THEN
+	RESULT := ASSERT_LTE_I ( AV := AV, EV := EV);
+	READY := TRUE;
+END_IF
+
+END_FUNCTION_BLOCK
+
+
+(* @NESTEDCOMMENTS := 'Yes' *)
+(* @PATH := '\/Assert functions' *)
+(* @OBJECTFLAGS := '0, 8' *)
+(* @SYMFILEFLAGS := '2048' *)
+FUNCTION ASSERT_LTE_I : BOOL
+VAR_INPUT
+	AV: DINT;
+	EV: DINT;
+END_VAR
+VAR
+END_VAR
+(* @END_DECLARATION := '0' *)
+ASSERT_LTE_I := ASSERT_LT_I ( AV := AV, EV := EV )
+	OR ASSERT_EQ_I ( AV := AV, EV := EV );
+END_FUNCTION
+
+
+(* @NESTEDCOMMENTS := 'Yes' *)
+(* @PATH := '\/Assert functions' *)
+(* @OBJECTFLAGS := '0, 8' *)
+(* @SYMFILEFLAGS := '2048' *)
+FUNCTION ASSERT_NEQ : BOOL
+VAR_INPUT
+	AV: REAL;
+	EV: REAL;
+END_VAR
+VAR
+END_VAR
+(* @END_DECLARATION := '0' *)
+ASSERT_NEQ := NOT ASSERT_EQ( AV:= AV, EV := EV );
+
+END_FUNCTION
+
+
+(* @NESTEDCOMMENTS := 'Yes' *)
+(* @PATH := '\/Assert functions' *)
+(* @OBJECTFLAGS := '0, 8' *)
+(* @SYMFILEFLAGS := '2048' *)
+FUNCTION ASSERT_NEQ_B : BOOL
+VAR_INPUT
+	AV: BOOL;
+	EV: BOOL;
+END_VAR
+VAR
+END_VAR
+(* @END_DECLARATION := '0' *)
+ASSERT_NEQ_B := NOT ASSERT_EQ_B( AV:= AV, EV := EV );
+
+END_FUNCTION
+
+
+(* @NESTEDCOMMENTS := 'Yes' *)
+(* @PATH := '\/Assert functions' *)
+(* @OBJECTFLAGS := '0, 8' *)
+(* @SYMFILEFLAGS := '2048' *)
+FUNCTION_BLOCK ASSERT_NEQ_D
+VAR_INPUT
+	AV: REAL;
+	EV: REAL;
+	D : TIME;
+END_VAR
+VAR_OUTPUT
+	RESULT: BOOL;
+	READY : BOOL;
+END_VAR
+VAR
+	T_Delay	: TON;
+END_VAR
+(* @END_DECLARATION := '0' *)
+(* start timer imediately *)
+T_Delay ( IN := TRUE, PT := D );
+
+(* be shure to run the test only once with ready signal *)
+IF T_Delay.Q AND NOT READY THEN
+	RESULT := ASSERT_NEQ ( AV := AV, EV := EV);
+	READY := TRUE;
+END_IF
+
+END_FUNCTION_BLOCK
+
+
+(* @NESTEDCOMMENTS := 'Yes' *)
+(* @PATH := '\/Assert functions' *)
+(* @OBJECTFLAGS := '0, 8' *)
+(* @SYMFILEFLAGS := '2048' *)
+FUNCTION_BLOCK ASSERT_NEQ_D_I
+VAR_INPUT
+	AV: DINT;
+	EV: DINT;
+	D : TIME;
+END_VAR
+VAR_OUTPUT
+	RESULT: BOOL;
+	READY : BOOL;
+END_VAR
+VAR
+	T_Delay	: TON;
+END_VAR
+(* @END_DECLARATION := '0' *)
+(* start timer imediately *)
+T_Delay ( IN := TRUE, PT := D );
+
+(* be shure to run the test only once with ready signal *)
+IF T_Delay.Q AND NOT READY THEN
+	RESULT := ASSERT_NEQ_I ( AV := AV, EV := EV);
+	READY := TRUE;
+END_IF
+
+END_FUNCTION_BLOCK
+
+
+(* @NESTEDCOMMENTS := 'Yes' *)
+(* @PATH := '\/Assert functions' *)
+(* @OBJECTFLAGS := '0, 8' *)
+(* @SYMFILEFLAGS := '2048' *)
+FUNCTION ASSERT_NEQ_I : BOOL
+VAR_INPUT
+	AV: DINT;
+	EV: DINT;
+END_VAR
+VAR
+END_VAR
+(* @END_DECLARATION := '0' *)
+ASSERT_NEQ_I := NOT ASSERT_EQ_I( AV:= AV, EV := EV );
+
+END_FUNCTION

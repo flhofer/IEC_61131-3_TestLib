@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+
+<pou>
+	<path><![CDATA[\/External Functions]]></path>
+	<name>SysMemSwap</name>
+	<flags>59400</flags>
+	<interface>
+		<![CDATA[FUNCTION SysMemSwap : DWORD
+(* Created 25.05.10 by FlorianH, last change 08.09.14 by FlorianH *)
+(* Swaps the Buffer Bytes (Hi<-> Lo) of a word buffer. *)
+(* returns the value of dwDest. *)
+
+VAR_INPUT
+	dwDest	: DWORD;	(* buffer *)
+	dwCount	: DWORD;	(* Number of bytes *)
+	bDwords	: BOOL; 	(* Use DWord Swap *)
+END_VAR
+{library private on}
+VAR
+	actCount	: DWORD;			(* Counter *)
+	PtIN		: POINTER TO BYTE;	(* Read pointer *)
+	PtOUT		: POINTER TO BYTE;	(* write pointer *)
+
+	bByte2		: BYTE;				(* Bytebuffer *)
+	bByte3		: BYTE;				(* Bytebuffer *)
+	bByte4		: BYTE;				(* Bytebuffer *)
+END_VAR
+{library private off}
+]]>
+	</interface>
+	<st>
+		<body>
+			<![CDATA[(* Check if addresses are ok *)
+IF dwDest = 0 OR dwCount < SEL (bDwords, 2, 4) THEN
+	SysMemSwap :=0;
+	RETURN;
+END_IF
+
+REPEAT
+	PtIN := dwDest + actCount;
+	PtOUT := dwDest + actCount +1;
+	bByte2 := PtOUT^ ;
+
+	IF bDwords AND (dwCount - actCount >= 4) THEN
+		(* DWord swap *)
+
+		(* Prepare DWORD *)
+		PtOUT := dwDest + actCount +2;
+		bByte3 := PtOUT^ ;
+		PtOUT := dwDest + actCount +3;
+		bByte4 := PtOUT^ ;
+
+		PtOUT^ := PtIn^;
+		PtOUT := dwDest + actCount +2;
+		PtOUT^ := bByte2;
+		PtOUT := dwDest + actCount +1;
+		PtOUT^ := bByte3;
+		PtIN^ := bByte4;
+
+	ELSE
+		(* Wordswap *)
+		PtOUT^ := PtIn^;
+		PtIN^ := bByte2;
+	END_IF
+
+	actCount := ActCount + SEL (bDwords, 2, 4);
+
+UNTIL actCount + 1 >= dwCount END_REPEAT
+
+SysMemSwap := dwDest;]]>
+		</body>
+	</st>
+</pou>

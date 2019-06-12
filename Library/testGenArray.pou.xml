@@ -1,0 +1,140 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+
+<pou>
+	<path/>
+	<name>testGenArray</name>
+	<flags>59392</flags>
+	<interface>
+		<![CDATA[FUNCTION testGenArray : REAL
+(* Created by FlorianH 24.05.2017, Modified by FlorianH 12.06.2017 *)
+(* Generates arreys or values for parametrized tests, sometimes Real type works for both *)
+VAR_INPUT
+	arrayAdr: POINTER TO REAL;
+	arraySze: DWORD;
+END_VAR
+{library private on}
+VAR
+	arrReal : POINTER TO REAL;
+	arrDint : POINTER TO DINT;
+	elmCount: DINT;
+	counter	: DINT;
+	rLimit1	: REAL;
+	rLimit2	: REAL;
+	rRange	: REAL;
+	dLimit1	: DINT;
+	dLimit2	: DINT;
+	dRange	: DINT;
+END_VAR
+{library private off}
+]]>
+	</interface>
+	<st>
+		<body>
+			<![CDATA[(* pretests of array *)
+elmCount := arraySze / SIZEOF(arraySze);
+IF elmCount < 3 OR arrayAdr =0 OR arraySze MOD SIZEOF(arraySze) <> 0 THEN
+	testGenArray := -1;
+	RETURN;
+END_IF
+
+arrDint := arrayAdr;
+
+IF arrDint^ > 6 THEN
+	arrDint^ := REAL_TO_DINT(arrayAdr^);
+END_IF
+
+(* based on the first element, select what to do *)
+CASE arrDint^ OF
+	tRndReal :	arrReal := arrayAdr + SIZEOF (arrayAdr);
+				rLimit1 := arrayAdr^ := arrReal^;
+				arrReal := arrReal + SIZEOF (arrReal);
+				rLimit2 := arrReal^;
+				rRange := rLimit2-rLimit1;
+				arrReal^ := rLimit1 + (rRange)/elmCount;
+				WHILE counter + 5 < elmCount DO
+					arrReal := arrReal + SIZEOF (arrReal);
+					arrReal^ := rLimit1 + Randomize() * rRange;
+					counter := counter + 1;
+				END_WHILE
+				arrReal := arrReal + SIZEOF (arrReal);
+				arrReal^ := rLimit2 - (rRange)/elmCount;
+				arrReal := arrReal + SIZEOF (arrReal);
+				arrReal^ := rLimit2;
+
+	tRndDint : 	arrDint := arrayAdr + SIZEOF (arrayAdr);
+				dLimit1 := arrDint^;
+				arrDint := arrDint + SIZEOF (arrDint);
+				dLimit2 := arrDint^;
+				arrDint := arrayAdr;
+				arrDint^:= dLimit1;
+				dRange := dLimit2-dLimit1;
+				arrDint := arrDint + SIZEOF (arrDint);
+				arrDint^ := dLimit1 + (dRange)/elmCount;
+				WHILE counter + 4 < elmCount DO
+					arrDint := arrDint + SIZEOF (arrDint);
+					arrDint^ := dLimit1 + REAL_TO_DINT(Randomize() * dRange);
+					counter := counter + 1;
+				END_WHILE
+				arrDint := arrDint + SIZEOF (arrDint);
+				arrDint^ := dLimit2 - (dRange)/elmCount;
+				arrDint := arrDint + SIZEOF (arrDint);
+				arrDint^ := dLimit2;
+
+	tLinReal : 	arrReal := arrayAdr + SIZEOF (arrayAdr);
+				rLimit1 := arrayAdr^ := arrReal^;
+				arrReal := arrReal + SIZEOF (arrReal);
+				rLimit2 := arrReal^;
+				arrReal := arrayAdr + SIZEOF (arrReal);
+				rRange := (rLimit2-rLimit1)/(elmCount-1);
+				WHILE counter + 2 < elmCount DO
+					counter := counter + 1;
+					arrReal^ := rLimit1 + counter * rRange;
+					arrReal := arrReal + SIZEOF (arrReal);
+				END_WHILE
+				arrReal^ := rLimit2;
+
+	tLinDint : 	arrDint := arrayAdr + SIZEOF (arrayAdr);
+				dLimit1 := arrDint^;
+				arrDint := arrDint + SIZEOF (arrDint);
+				dLimit2 := arrDint^;
+				arrDint := arrayAdr;
+				arrDint^:= dLimit1;
+				dRange := (dLimit2-dLimit1)/(elmCount-1);
+				arrDint := arrayAdr + SIZEOF (arrDint);
+				WHILE counter + 2 < elmCount DO
+					counter := counter + 1;
+					arrDint^ := dLimit1 + counter * dRange;
+					arrDint := arrDint + SIZEOF (arrDint);
+				END_WHILE
+				arrDint^ := dLimit2;
+
+	tTupReal :	IF elmCount < 5 OR elmCount MOD 2 = 0 THEN
+					RETURN;
+				END_IF
+
+				arrReal := arrayAdr + SIZEOF (arrayAdr);
+				dLimit2 := REAL_TO_DINT(arrReal^); (* time value *)
+				arrReal := arrReal + SIZEOF (arrReal);
+				rLimit2 := arrReal^;				(* data value *)
+				dRange := testTime();
+				counter := 2;
+				WHILE dLimit2 < dRange AND counter < elmCount -1 DO
+					dLimit1 := dLimit2;
+					rLimit1 := dLimit2;
+					arrReal := arrReal + SIZEOF (arrayAdr);
+					dLimit2 := REAL_TO_DINT(arrReal^); (* time value *)
+					arrReal := arrReal + SIZEOF (arrReal);
+					rLimit2 := arrReal^;				(* data value *)
+					counter := counter + 2;
+				END_WHILE;
+
+				rRange := (rLimit2-rLimit1)/(dLimit2-dLimit1);
+				testGenArray := MIN (rLimit1 + rRange * (dRange - dLimit1), rLimit2);
+
+	tTupDint : ;
+END_CASE
+
+]]>
+		</body>
+	</st>
+</pou>

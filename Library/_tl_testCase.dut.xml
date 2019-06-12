@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+
+<dut>
+	<path>\/_tl_structs</path>
+	<name>_tl_testCase</name>
+	<flags>2048</flags>
+	<interface>
+		<![CDATA[TYPE _tl_testCase :
+STRUCT
+	Name 		: STRING(10);		(* Name of the test *)
+	ExecCounter : UINT := 0;		(* 0 = no executions jet, > no of exec *)
+	StartTime	: TIME;				(* Time in ms of the start of the test, based on TIME() *)
+	EndTime		: DWORD;			(* sets a minimum time for the test step to survive, also timeout *)
+	State		: BYTE 	:= 0;		(* Test case and test state *)
+	Result		: BYTE	:= 0;		(* Result, _tlState *)
+	TestCounter	: USINT := 0;		(* Test Number, in the test case *)
+	TestStep	: USINT := 0;		(* Actual test step *)
+	TestCount	: USINT := 1;		(* Total tests for this tc *)
+	TestSteps	: USINT := 1;		(* Total test steps *)
+	(* assert memory *)
+	AssertStats	: ARRAY [0.._tl_assertsPerTest] OF _tl_assertStats;
+END_STRUCT
+END_TYPE
+]]>
+	</interface>
+</dut>

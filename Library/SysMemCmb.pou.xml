@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+
+<pou>
+	<path><![CDATA[\/External Functions]]></path>
+	<name>SysMemCmb</name>
+	<flags>59392</flags>
+	<interface>
+		<![CDATA[FUNCTION SysMemCmb : BOOL
+(* Created 05.04.11 by FlorianH, last change 31.10.13 by FlorianH *)
+(* Combines using AND, OR or XOR 2 memory areas and saves in DwSrc *)
+(* returns True if output is not 0 *)
+
+VAR_INPUT
+	dwSrc	: DWORD;	(* Buffer *)
+	dwCmb	: DWORD;	(* Combine Mask *)
+	dwCount	: DWORD;	(* Number of Bytes to combine *)
+	iType	: INT;		(* Select Type 0: AND, 1: OR, 2: XOR , 3: AND NOT, 4: Compare *)
+END_VAR
+{library private on}
+VAR
+	actCount	: DWORD;			(* Counter *)
+	PtIN		: POINTER TO BYTE;	(* pointer to Bufferpos *)
+	PtCmb		: POINTER TO BYTE;	(* pointer to Maskpos *)
+END_VAR
+{library private off}
+]]>
+	</interface>
+	<st>
+		<body>
+			<![CDATA[(* Check if addresses are ok *)
+IF dwCmb = 0 OR dwSrc = 0 OR dwCount = 0 THEN
+	RETURN;
+END_IF
+
+actCount := 0;
+REPEAT
+	PtIN := dwSrc + actCount;
+	PtCmb := dwCmb + actCount;
+
+	CASE iType OF
+		0:	SysMemCmb := SysMemCmb OR ((PtIn^ AND PtCmb^) <> 0);
+			PtIN^ := PtIN^ AND PtCmb^;
+
+		1:	SysMemCmb := SysMemCmb OR ((PtIn^ OR PtCmb^) <> 0);
+			PtIN^ := PtIN^ OR PtCmb^;
+
+		2:	SysMemCmb := SysMemCmb OR ((PtIn^ XOR PtCmb^) <> 0);
+			PtIN^ := PtIN^ XOR PtCmb^;
+
+
+		3:	SysMemCmb := SysMemCmb OR ((PtIn^ AND NOT PtCmb^) <> 0);
+			PtIN^ := PtIN^ AND NOT PtCmb^;
+
+		4:  SysMemCmb := SysMemCmb OR (PtIn^ <> PtCmb^);
+	END_CASE
+
+	actCount := ActCount +1;
+UNTIL actCount >= dwCount END_REPEAT]]>
+		</body>
+	</st>
+</pou>

@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+
+<pou>
+	<path/>
+	<name>testTimeRange</name>
+	<flags>59392</flags>
+	<interface>
+		<![CDATA[FUNCTION testTimeRange : BOOL
+(* Created by FlorianH 22.09.2016, Modified by FlorianH 22.09.2016 *)
+(* Returns true if the time span is in the range specified *)
+VAR_INPUT
+	from : DWORD;
+	toT  : DWORD;
+END_VAR
+{library private on}
+VAR
+	Diff : UDINT;
+END_VAR
+{library private off}
+]]>
+	</interface>
+	<st>
+		<body>
+			<![CDATA[Diff := testTime();
+testTimeRange := Diff >= from AND Diff < toT;]]>
+		</body>
+	</st>
+</pou>

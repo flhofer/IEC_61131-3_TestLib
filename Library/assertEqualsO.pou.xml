@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+
+<pou>
+	<path/>
+	<name>assertEqualsO</name>
+	<flags>59392</flags>
+	<interface>
+		<![CDATA[FUNCTION assertEqualsO : DINT
+(* Created by FlorianH 22.09.2016, Modified by FlorianH 26.06.2017 *)
+(* compares two objects, using the return value of SysMemCmb in compare assertTrue *)
+VAR_INPUT
+	Addr1	: DWORD;
+	Addr2	: DWORD;
+	Size	: DWORD;
+	Mode  	: DWORD;
+	Delay 	: DWORD;
+END_VAR]]>
+	</interface>
+	<st>
+		<body><![CDATA[assertEqualsO := assertTrue (Value := NOT SysMemCmb( Addr1, Addr2, Size, 4), Mode := Mode, Delay := Delay);]]></body>
+	</st>
+</pou>

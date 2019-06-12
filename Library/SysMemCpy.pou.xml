@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+
+<pou>
+	<path><![CDATA[\/External Functions]]></path>
+	<name>SysMemCpy</name>
+	<flags>59392</flags>
+	<interface>
+		<![CDATA[FUNCTION SysMemCpy : DWORD
+(* Created 01.04.10 by FlorianH, last change 01.04.10 by FlorianH *)
+(*Copies characters between buffers. *)
+(* returns the value of dwDest. *)
+
+VAR_INPUT
+	dwDest	: DWORD;	(* New buffer *)
+	dwSrc	: DWORD;	(* Buffer to copy from *)
+	dwCount	: DWORD;	(* Number of characters to copy*)
+END_VAR
+{library private on}
+VAR
+	actCount	: DWORD;			(* Counter *)
+	PtIN		: POINTER TO BYTE;	(* pointer to source-Bufferpos *)
+	PtOUT		: POINTER TO BYTE;	(* pointer to dest-Bufferpos *)
+END_VAR
+{library private off}
+]]>
+	</interface>
+	<st>
+		<body>
+			<![CDATA[(* Check if addresses are ok *)
+IF dwDest = 0 OR dwSrc = 0 OR dwCount = 0 THEN
+	SysMemCpy :=0;
+	RETURN;
+END_IF
+
+actCount := 0;
+IF dwDest < dwSrc THEN
+(* Fwd *)
+	REPEAT
+
+		PtIN := dwSrc + actCount;
+		PtOUT := dwDest + actCount;
+		PtOUT^ := PtIN^;
+
+		actCount := ActCount +1;
+	UNTIL actCount >= dwCount END_REPEAT
+
+ELSE
+(* Rev *)
+	REPEAT
+
+		PtIN := dwSrc + dwCount - actCount - 1;
+		PtOUT := dwDest + dwCount - actCount - 1;
+		PtOUT^ := PtIN^;
+
+		actCount := ActCount +1;
+	UNTIL actCount >= dwCount	END_REPEAT
+
+END_IF
+
+SysMemCpy := dwDest;]]>
+		</body>
+	</st>
+</pou>

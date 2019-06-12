@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+
+<pou>
+	<path/>
+	<name>assertEquals</name>
+	<flags>59392</flags>
+	<interface>
+		<![CDATA[FUNCTION assertEquals : DINT
+(* Created by FlorianH 22.09.2016, Modified by FlorianH 26.06.2017 *)
+(* compares two boolean values, using assertTrue *)
+VAR_INPUT
+	Value1	: BOOL;
+	Value2	: BOOL;
+	Mode	: DWORD;
+	Delay	: DWORD;
+END_VAR]]>
+	</interface>
+	<st>
+		<body><![CDATA[assertEquals := assertTrue (Value := Value1 = Value2, Mode := Mode, Delay := Delay);]]></body>
+	</st>
+</pou>

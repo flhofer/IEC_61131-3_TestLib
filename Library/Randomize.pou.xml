@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+
+<pou>
+	<path><![CDATA[\/External Functions]]></path>
+	<name>Randomize</name>
+	<flags>59392</flags>
+	<interface>
+		<![CDATA[FUNCTION Randomize : REAL
+(* Created x.x.11 by FlorianH, last change 24.05.17 by FlorianH *)
+(* Creates a peudocasual number. adapted to 0..1 REAL *)
+]]>
+	</interface>
+	<st>
+		<body>
+			<![CDATA[(* From Wiki *)
+RND_key := 36969 * (RND_key AND 65535) + SHR (RND_key , 16);
+RND_seed := 18000 * (RND_seed AND 65535) + SHR (RND_seed , 16);
+Randomize :=  DWORD_TO_REAL (SHL (RND_key, 16) + RND_seed)/ DWORD_TO_REAL(DWORD#16#FFFFFFFF);
+]]>
+		</body>
+	</st>
+</pou>

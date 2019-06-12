@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+
+<dut>
+	<path>\/_tl_structs</path>
+	<name>_tl_assertStats</name>
+	<flags>2048</flags>
+	<interface>
+		<![CDATA[TYPE _tl_assertStats :
+STRUCT
+	(* Timer	: DWORD;	(* Timer start time, assertion verification *) - 160 *)
+	(* Count 	: USINT;	(* counter for triggering amount *) - 40 *)
+	Trig  	: BOOL;
+	Done	: BOOL;
+	Success	: BOOL;
+END_STRUCT
+END_TYPE
+]]>
+	</interface>
+</dut>

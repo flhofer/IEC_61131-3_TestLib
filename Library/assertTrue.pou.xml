@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+
+<pou>
+	<path/>
+	<name>assertTrue</name>
+	<flags>59392</flags>
+	<interface>
+		<![CDATA[FUNCTION assertTrue : DINT
+(* Created by FlorianH 05.08.2016, Modified by FlorianH 26.06.2017 *)
+(* genuine base case of the assertion, calls then the main evaluation part *)
+VAR_INPUT
+	Value : BOOL;
+	Mode  : DWORD;
+	Delay : DWORD;
+END_VAR
+]]>
+	</interface>
+	<st>
+		<body>
+			<![CDATA[(* Todo Better Checks for assertion memory positions *)
+IF TestCase.tCase > 0 AND TestCase.assert > 0 THEN
+	(* Delay from secs to milisecs *)
+	TestCase.assertThat (Value := Value, Parm1 := Mode, Parm2 := Delay * _delayScale, RetVal => assertTrue);
+	RETURN;
+END_IF
+(* Exception *)
+assertTrue := -1;]]>
+		</body>
+	</st>
+</pou>

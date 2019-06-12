@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+
+<pou>
+	<path/>
+	<name>assertFalse</name>
+	<flags>59392</flags>
+	<interface>
+		<![CDATA[FUNCTION assertFalse : DINT
+(* Created by FlorianH 05.08.2016, Modified by FlorianH 26.06.2017 *)
+VAR_INPUT
+	Value : BOOL;
+	Mode  : DWORD;
+	Delay : DWORD;
+END_VAR
+
+]]>
+	</interface>
+	<st>
+		<body>
+			<![CDATA[(* assertion return value *)
+assertFalse := assertTrue (Value := NOT Value, Mode := Mode, Delay := Delay);]]>
+		</body>
+	</st>
+</pou>

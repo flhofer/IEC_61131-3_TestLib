@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+
+<pou>
+	<path/>
+	<name>assertEqualsD</name>
+	<flags>59392</flags>
+	<interface>
+		<![CDATA[FUNCTION assertEqualsD : DINT
+(* Created by FlorianH 22.09.2016, Modified by FlorianH 28.06.2017 *)
+(* compares two numeric values, non float, using assertTrue *)
+VAR_INPUT
+	Value1	: DINT;
+	Value2	: DINT;
+	Mode	: DWORD;
+	Delay	: DWORD;
+END_VAR
+{library private on}
+VAR
+	Md 	: DWORD;
+	res	: BOOL;
+END_VAR
+{library private off}
+]]>
+	</interface>
+	<st>
+		<body>
+			<![CDATA[Md := Mode AND 16#F000000;
+CASE Md OF
+	mEQ		: res := Value1 = Value2;
+	mLT		: res := Value1 < Value2;
+	mGT		: res := Value1 > Value2;
+	mLEQ	: res := Value1 <= Value2;
+	mGEQ	: res := Value1 >= Value2;
+END_CASE
+
+assertEqualsD := assertTrue (Value := res, Mode := Mode AND 16#F0FFFFFF, Delay := Delay);]]>
+		</body>
+	</st>
+</pou>

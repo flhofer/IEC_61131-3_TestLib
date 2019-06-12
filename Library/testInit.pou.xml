@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+
+<pou>
+	<path/>
+	<name>testInit</name>
+	<flags>59392</flags>
+	<interface>
+		<![CDATA[FUNCTION testInit : DINT
+(* Created by FlorianH 05.08.2016, Modified by FlorianH 25.05.2017 *)
+(* finds the acual test case by name and updates the pointers, finally calls the state machine *)
+VAR_INPUT
+	Name : STRING (10);
+	Count: USINT; (* Amount of tests, if 0 or wrong it can be set with testParam afterwards *)
+END_VAR
+{library private on}
+VAR
+	ptTestCase	: POINTER TO POINTER TO _tl_testCase;
+END_VAR
+{library private off}
+]]>
+	</interface>
+	<st>
+		<body>
+			<![CDATA[ptTestCase	:= ADR (TestCase.tCase);
+ptTestCase^ := ADR (TestCase.testCaseMem[0]);
+
+REPEAT
+	IF ptTestCase^^.Name = '' THEN
+		(* Empty testCase found, assert pointer is null *)
+
+		(* assign test case name, forced through pointer *)
+		ptTestCase^^.Name := Name;
+
+		(* init and return test counter *)
+		TestCase(Parm1 := Count, RetVal => testInit);
+		RETURN;
+
+	ELSIF ptTestCase^^.Name = Name THEN
+		(* Matching testCase found, run state-machine check *)
+		TestCase(Parm1 := Count, RetVal => testInit);
+		RETURN;
+	END_IF
+
+	(* Goto next, not in this position *)
+	ptTestCase^ := ptTestCase^ + SIZEOF (TestCase.testCaseMem[0]);
+UNTIL ptTestCase^ > ADR(TestCase.testCaseMem[_tl_testCases])
+END_REPEAT;
+
+(* No empty spot or match found, return error *)
+testInit := -10;]]>
+		</body>
+	</st>
+</pou>
