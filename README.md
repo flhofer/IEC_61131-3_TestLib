@@ -1,7 +1,13 @@
 # CoDeSys-TestLib
 A CoDeSys v2.3 test library based on a POU approach
 
-The aim of this work was to create a standardized, IEC 61131-3 and cross-vendor usable software testing library. With it, developers should have a new production tool which allows fast in-environment testing.
+The aim of this work was to create a standardized, IEC 61131-3 and cross-vendor usable software testing library. With it, developers should have a new production tool which allows fast in-environment testing. It is focussed on practitioners needs and does not require further training or programming.
+
+The project phases are as follows:
+1. A testing library for CoDeSys and other IEC 61131-3 compatible enviroments
+1. An automatic test generation tool to translate input tables into test to be imported
+1. Plugins for test vaule detection, input partitioning, border value detection and alike
+1. Logging and central processing of test results
 
 ## Directory structure
 - _AutoGen_           Python scripts to automate test case generation for direct import into CoDeSys from an Excel file (WIP)
@@ -9,7 +15,7 @@ The aim of this work was to create a standardized, IEC 61131-3 and cross-vendor 
   - FUNCFIRSTVER.EXP  contains a simple POU 1-1 test version
   - utf.lib           testing libary
   - *.xml             PlcOpen compatible exports to port the laibrary to other IEC 61131-3 based systems 
-- _Examples_          Example projects using the testing library for CoDeSys v2.3
+- _Examples_          using the testing library for CoDeSys v2.3
 
 ## Documentation
 
