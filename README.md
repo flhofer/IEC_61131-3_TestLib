@@ -8,6 +8,7 @@ The aim of this work was to create a standardized, IEC 61131-3 and cross-vendor 
 - _Library_           Testing library, exports and `.lib` file
   - FUNCFIRSTVER.EXP  contains a simple POU 1-1 test version
   - utf.lib           testing libary
+  - *.xml             PlcOpen compatible exports to port the laibrary to other IEC 61131-3 based systems 
 - _Examples_          Example projects using the testing library for CoDeSys v2.3
 
 ## Documentation
