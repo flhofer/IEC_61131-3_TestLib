@@ -19,7 +19,7 @@ The project phases are as follows:
 
 ## Documentation
 
-This work is based on my [Master's Thesis](https://florianhofer.it/docmisc/?id=6e2867cb785616c1680bc344faf0b76f2a5b6134) and a [IEEE Trasnactions on Industrial Informatics](https://florianhofer.it/papers/?id=191d675eb3b37b0ee9bfe6022777b137a6127972) journal paper published in September 2019. 
+This work is based on my [Master's Thesis](https://www.florianhofer.it/docmisc/?id=6e2867cb785616c1680bc344faf0b76f2a5b6134) and a [IEEE Trasnactions on Industrial Informatics](https://www.florianhofer.it/papers/?id=191d675eb3b37b0ee9bfe6022777b137a6127972) journal paper published in September 2019. 
 It is still work in progress, but unfortunately only a side project of my ongoing PhD, so please support the project by contributing or sponsorship.
 
 Thank you!
