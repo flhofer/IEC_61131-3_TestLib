@@ -14,6 +14,11 @@ import exp
 import wbk
 
 def generateConst ():
+	"""Generate constant values for the test
+	Generate values that represent test parameters and test size parameters
+	to add to the test POU"""
+
+	# Collector for the parametrized test values
 	testvars = []
 	seqlen = 0
 	for s in steps:
@@ -28,9 +33,11 @@ def generateConst ():
 			const += " )"
 				
 			testvar.append(const)
+
 		seqlen = max(seqlen, len(testvar))
 		testvars.append(testvar)
-		
+	
+	# Finally, return the constants for test function 
 	constants = {0:{ 'Name': "NoOfTests",	'Type': "INT", 'Value' : len(testvars)}}
 	constants[1] = { 'Name': "NoOfInputs",	'Type': "INT", 'Value' : seqlen}
 	constants[2] = { 'Name': "TestVars",	'Type': "ARRAY [1..NoOfTests,1..NoOfInputs] OF Vars"+testName, 'Value' : testvars}
@@ -40,20 +47,25 @@ def generateConst ():
 	# fix len steps to len array
 
 def generateVars():
+	"""Generate -required- variable list to add to the test POU"""
 	
 	variables = {0:{ 'Name': instanceName,	'Type': fbName}}
 	variables[1] = { 'Name': 'ptrVars', 	'Type': 'POINTER TO ' + testName + '_vars'}
 	variables[2] = { 'Name': 'i', 			'Type': 'INT', 'Value' : "1"}
-
 	
 	return variables
 
+"""
+Main program
+
+Read test workbook and generate test cases/import for the IEC61131-3
+""" 
 
 wb = xlrd.open_workbook(os.path.join('','test_unit.xlsx'))
 wb.sheet_names()
 sh = wb.sheet_by_index(0)
 
-#header information
+#Header information
 testName = sh.cell(0,1).value
 fbName = sh.cell(0,4).value
 instanceName = sh.cell(0,6).value
@@ -92,4 +104,3 @@ with open(testName + ".txt", "a") as testFile:
 	exp.createTestDUT(testFile, testName, typeVar)
 
 testFile.close()
-
