@@ -20,8 +20,8 @@ class expWriter:
         try:
             self.testFile = open(fileName + ".txt", "a")
         except:
-            print ("Unable to open file to write to")
-            return # TODO: Return exception
+            print ("Unable to open file ' + fileName + ' for write")
+            raise
         
         self.testName = testName
 
@@ -157,4 +157,8 @@ class expWriter:
         self.testFile.write("END_STRUCT\n")
         self.testFile.write("END_TYPE\n\n")
         self.testFile.write("(* @END_DECLARATION := '0' *)\n")
+        
+    def close(self):
+        """Close test file"""
+        self.testFile.close()
     
