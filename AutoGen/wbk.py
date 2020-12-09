@@ -8,7 +8,7 @@ import test
 def getFunctionVars(columns):
     inputs = {}
     outputs= {}
-    number = 1
+    number = 0
     outtoin = False
     coliter = iter(columns)
     for col in coliter:
@@ -33,7 +33,7 @@ def getFunctionVars(columns):
                 if outtoin:
                     break
                 outtoin = True
-                number = 1
+                number = 0
     
     testTime = {"Name" : "testtime", "Type": "DWORD"}
     return [testTime, inputs, outputs]    
@@ -41,12 +41,11 @@ def getFunctionVars(columns):
 def scanLine(columns, typeDef):
     inputs = {}
     outputs= {}
-    number = 1
-
+    
     testTime = columns[0]
     
     i = 1
-    cnt = 1
+    cnt = 0
     for type in typeDef[2]:
         var = {"Value": columns[i], "Type": columns[i+1]}
         outputs [cnt]= var.copy()
@@ -55,7 +54,7 @@ def scanLine(columns, typeDef):
         cnt+=1
     
     i+=1 # skip the line with hash
-    cnt = 1
+    cnt = 0
     for type in typeDef[1]:
         var = {"Value": columns[i]}
         inputs [cnt]= var.copy()
