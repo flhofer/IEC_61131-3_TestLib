@@ -1,5 +1,13 @@
 #!/usr/bin/python
 
+# -----------------------------------------------------------
+# Test Generator for the IEC61131-3 Test library
+#
+# (C) 2017-2020 Hofer Florian, Bolzano, ITALY
+# Released under GNU Public License (GPL)
+# email info@florianhofer.it
+# -----------------------------------------------------------
+
 import xlrd
 import os.path
 import exp
@@ -23,9 +31,9 @@ def generateConst ():
 		seqlen = max(seqlen, len(testvar))
 		testvars.append(testvar)
 		
-	constants = {1:{ 'Name': "NoOfTests", 'Type': "INT", 'Value' : len(testvars)}}
-	constants[1] = { 'Name': "NoOfInputs", 'Type': "INT", 'Value' : seqlen}
-	constants[2] = {'Name' : "TestVars", 'Type' : "ARRAY [1..NoOfTests,1..NoOfInputs] OF Vars"+testName, 'Value' : testvars}
+	constants = {0:{ 'Name': "NoOfTests",	'Type': "INT", 'Value' : len(testvars)}}
+	constants[1] = { 'Name': "NoOfInputs",	'Type': "INT", 'Value' : seqlen}
+	constants[2] = { 'Name': "TestVars",	'Type': "ARRAY [1..NoOfTests,1..NoOfInputs] OF Vars"+testName, 'Value' : testvars}
 	#print constants
 
 	return constants
@@ -33,9 +41,9 @@ def generateConst ():
 
 def generateVars():
 	
-	variables = {1:{ 'Name': instanceName, 'Type': fbName}}
-	variables[1] = { 'Name': 'ptrVars', 'Type': 'POINTER TO ' + testName + '_vars'}
-	variables[2] = { 'Name': 'i', 'Type': 'INT', 'Value' : "1"}
+	variables = {0:{ 'Name': instanceName,	'Type': fbName}}
+	variables[1] = { 'Name': 'ptrVars', 	'Type': 'POINTER TO ' + testName + '_vars'}
+	variables[2] = { 'Name': 'i', 			'Type': 'INT', 'Value' : "1"}
 
 	
 	return variables
