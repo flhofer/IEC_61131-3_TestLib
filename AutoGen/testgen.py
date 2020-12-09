@@ -59,29 +59,28 @@ Main program
 Read test workbook and generate test cases/import for the IEC61131-3
 """ 
 
-wbk = workbook('test_unit.xlsx')
+wb = workbook('test_unit.xlsx')
 
-wbkiter = iter(wbk)
+wbkiter = iter(wb)
 
-# TODO: create multiple tests per sheet, continue on next sheet with new file	
-testFile = expWriter(testName=wbk.testName, fileName=wbk.testName)
-
-# test file is open, create header and lets scan for data!e
-testFile.createHeader()
+#iterate though sheets
+for wbk in wbkiter:
+	# TODO: create multiple tests per sheet, continue on next sheet with new file	
+	testFile = expWriter(testName=wbk.testName, fileName=wbk.testName)
 	
-# found header, scan for labels.
-typeVar = wbk.getFunctionVars()
+	# test file is open, create header and lets scan for data!e
+	testFile.createHeader()
+		
+	# found header, scan for labels.
+	typeVar = wbk.getFunctionVars()
+	
+	# build step dictionary
+	steps = wbk.readSequences(typeVar)
+		
+	testFile.writeConstatns(generateConst(steps))
+	testFile.writeVariables(generateVars())
+	testFile.createStateMachine(wbk.instanceName, typeVar)
+	testFile.createFooter()
+	testFile.createTestDUT(typeVar)
 
-# build step dictionary
-cnt = 0
-steps = {}
-#while sh.nrows > scanPos:
-steps[cnt] = wbk.readSequence(typeVar)
-
-testFile.writeConstatns(generateConst(steps))
-testFile.writeVariables(generateVars())
-testFile.createStateMachine(wbk.instanceName, typeVar)
-testFile.createFooter()
-testFile.createTestDUT(typeVar)
-
-testFile.close()
+	testFile.close()

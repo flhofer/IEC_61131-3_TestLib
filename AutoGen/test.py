@@ -7,9 +7,4 @@
 # Released under GNU Public License (GPL)
 # email info@florianhofer.it
 # -----------------------------------------------------------
-
-def todo():
-    """TODO placeholder"""
-    
-    print ("*** TODO ***\n")
     

@@ -8,25 +8,14 @@
 # email info@florianhofer.it
 # -----------------------------------------------------------
 
-import test
-
 import xlrd
 import os.path
 
 class workbook:
     
-    def __init__(self, bookfile):
-        """Create new instance, open bookfile and start reading info"""
-
-        try:
-            self.wb = xlrd.open_workbook(os.path.join('', bookfile))
-        except:
-            print ("Unable to open file ' + fileName + ' for write")
-            raise
+    def __readBaseParams(self):
+        """Read header info and reset counters"""
         
-        self.wb.sheet_names()
-        self.sh = self.wb.sheet_by_index(0)
-
         #Header information
         self.testName = self.sh.cell(0,1).value
         self.fbName = self.sh.cell(0,4).value
@@ -41,7 +30,32 @@ class workbook:
             if state != "State":
                 self.scanPos += 1
             else:
-                break
+                break    
+    
+    def __init__(self, bookfile):
+        """Create new instance, open bookfile and start reading info"""
+
+        try:
+            self.wb = xlrd.open_workbook(os.path.join('', bookfile))
+        except:
+            print ("Unable to open file ' + fileName + ' for write")
+            raise
+        
+        print (self.wb.sheet_names())
+        self.sheetno = -1
+            
+    def __iter__(self):
+        """Implement the iterator interface"""
+        return self
+
+    def __next__(self):
+        """Iterate to next sheet"""
+        self.sheetno+=1
+        if self.wb.nsheets <= self.sheetno:
+            raise StopIteration
+        self.sh = self.wb.sheet_by_index(self.sheetno)
+        self.__readBaseParams()
+        return self
     
     def getFunctionVars(self):
         """Collect the names and types of I/O vaiables in tables"""
@@ -114,8 +128,8 @@ class workbook:
     def readSequence(self, typeDef):
         """Read a test sequence in spreadsheet, group them into a value set"""
         
+        sequence = {}
         while self.sh.nrows> self.scanPos :    
-            sequence = {}
             self.scanPos += 1
             cnt = 0
             print (self.sh.nrows)
@@ -128,3 +142,16 @@ class workbook:
                 cnt += 1
             
         return sequence
+
+    def readSequences(self, typeDef):
+        
+        cnt = 0
+        steps = {}
+        
+        while (self.sh.nrows > self.scanPos):
+            steps[cnt] = self.readSequence(typeDef)
+            if steps[cnt] == {}:
+                del steps[cnt]
+            cnt+=1
+        
+        return steps
