@@ -8,12 +8,10 @@
 # email info@florianhofer.it
 # -----------------------------------------------------------
 
-import xlrd
-import os.path
-import exp
-import wbk
+from exp import expWriter
+from wbk import workbook
 
-def generateConst ():
+def generateConst (steps):
 	"""Generate constant values for the test
 	Generate values that represent test parameters and test size parameters
 	to add to the test POU"""
@@ -40,7 +38,7 @@ def generateConst ():
 	# Finally, return the constants for test function 
 	constants = {0:{ 'Name': "NoOfTests",	'Type': "INT", 'Value' : len(testvars)}}
 	constants[1] = { 'Name': "NoOfInputs",	'Type': "INT", 'Value' : seqlen}
-	constants[2] = { 'Name': "TestVars",	'Type': "ARRAY [1..NoOfTests,1..NoOfInputs] OF Vars"+testName, 'Value' : testvars}
+	constants[2] = { 'Name': "TestVars",	'Type': "ARRAY [1..NoOfTests,1..NoOfInputs] OF Vars" + wbk.testName, 'Value' : testvars}
 	#print constants
 
 	return constants
@@ -49,8 +47,8 @@ def generateConst ():
 def generateVars():
 	"""Generate -required- variable list to add to the test POU"""
 	
-	variables = {0:{ 'Name': instanceName,	'Type': fbName}}
-	variables[1] = { 'Name': 'ptrVars', 	'Type': 'POINTER TO ' + testName + '_vars'}
+	variables = {0:{ 'Name': wbk.instanceName,	'Type': wbk.fbName}}
+	variables[1] = { 'Name': 'ptrVars', 	'Type': 'POINTER TO ' + wbk.testName + '_vars'}
 	variables[2] = { 'Name': 'i', 			'Type': 'INT', 'Value' : "1"}
 	
 	return variables
@@ -61,46 +59,28 @@ Main program
 Read test workbook and generate test cases/import for the IEC61131-3
 """ 
 
-wb = xlrd.open_workbook(os.path.join('','test_unit.xlsx'))
-wb.sheet_names()
-sh = wb.sheet_by_index(0)
+wbk = workbook('test_unit.xlsx')
 
-#Header information
-testName = sh.cell(0,1).value
-fbName = sh.cell(0,4).value
-instanceName = sh.cell(0,6).value
+wbkiter = iter(wbk)
 
-scanPos = 0
-
-testFile = exp.expWriter(testName=testName, fileName=testName)
+# TODO: create multiple tests per sheet, continue on next sheet with new file	
+testFile = expWriter(testName=wbk.testName, fileName=wbk.testName)
 
 # test file is open, create header and lets scan for data!e
 testFile.createHeader()
 	
-while True:
-	state = sh.cell(scanPos,0).value
-	
-	if state != "State":
-		scanPos += 1
-	else:
-		break
-	
 # found header, scan for labels.
-typeVar = wbk.getFunctionVars(sh.row_values(scanPos, 2))
-
-scanPos += 1 # next line, start to scan
+typeVar = wbk.getFunctionVars()
 
 # build step dictionary
 cnt = 0
 steps = {}
-print (scanPos)
 #while sh.nrows > scanPos:
-steps[cnt] = wbk.readSequence(sh, scanPos, typeVar)
-print (scanPos)
+steps[cnt] = wbk.readSequence(typeVar)
 
-testFile.writeConstatns(generateConst())
+testFile.writeConstatns(generateConst(steps))
 testFile.writeVariables(generateVars())
-testFile.createStateMachine(instanceName, typeVar)
+testFile.createStateMachine(wbk.instanceName, typeVar)
 testFile.createFooter()
 testFile.createTestDUT(typeVar)
 

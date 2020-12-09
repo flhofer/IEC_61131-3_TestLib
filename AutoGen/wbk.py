@@ -16,29 +16,38 @@ import os.path
 class workbook:
     
     def __init__(self, bookfile):
+        """Create new instance, open bookfile and start reading info"""
+
+        try:
+            self.wb = xlrd.open_workbook(os.path.join('', bookfile))
+        except:
+            print ("Unable to open file ' + fileName + ' for write")
+            raise
         
-        self.wb = xlrd.open_workbook(os.path.join('',bookfile))
         self.wb.sheet_names()
         self.sh = self.wb.sheet_by_index(0)
 
         #Header information
-        testName = self.sh.cell(0,1).value
-        fbName = self.sh.cell(0,4).value
-        instanceName = self.sh.cell(0,6).value
+        self.testName = self.sh.cell(0,1).value
+        self.fbName = self.sh.cell(0,4).value
+        self.instanceName = self.sh.cell(0,6).value
 
-        scanPos = 0
+        self.scanPos = 0
         
         # Find beginning of declaration tables
         while True:
-            state = self.sh.cell(scanPos,0).value
+            state = self.sh.cell(self.scanPos,0).value
         
             if state != "State":
-                scanPos += 1
+                self.scanPos += 1
             else:
                 break
     
-    def getFunctionVars(self, columns):
+    def getFunctionVars(self):
         """Collect the names and types of I/O vaiables in tables"""
+        
+        # read actual line, column 2 on
+        columns = self.sh.row_values(self.scanPos, 2)
         
         inputs = {}
         outputs= {}
