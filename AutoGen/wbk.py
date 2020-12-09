@@ -1,11 +1,18 @@
-'''
-Created on May 30, 2017
+# -----------------------------------------------------------
+# Test Generator for the IEC61131-3 Test library - Workbook module
+#
+# Created May, 30, 2017
+#
+# (C) 2017-2020 Hofer Florian, Bolzano, ITALY
+# Released under GNU Public License (GPL)
+# email info@florianhofer.it
+# -----------------------------------------------------------
 
-@author: Florian Hofer
-'''
 import test
 
 def getFunctionVars(columns):
+    """Collect the names and types of I/O vaiables in tables"""
+    
     inputs = {}
     outputs= {}
     number = 0
@@ -39,9 +46,12 @@ def getFunctionVars(columns):
     return [testTime, inputs, outputs]    
 
 def scanLine(columns, typeDef):
+    """Read a variable line and create time and I/O value list"""
+    
     inputs = {}
     outputs= {}
     
+    # Time value
     testTime = columns[0]
     
     i = 1
@@ -65,6 +75,8 @@ def scanLine(columns, typeDef):
     return [testTime, inputs, outputs]    
     
 def readSequence(sh, scanPos, typeDef):
+    """Read a test sequence in spreadsheet, group them into a value set"""
+    
     while sh.nrows> scanPos :    
         sequence = {}
         scanPos += 1
