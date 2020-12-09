@@ -7,7 +7,7 @@ import wbk
 
 def generateConst ():
 	testvars = []
-	seqlen = 1
+	seqlen = 0
 	for s in steps:
 		testvar = []
 		for v in steps[s]:
@@ -24,8 +24,8 @@ def generateConst ():
 		testvars.append(testvar)
 		
 	constants = {1:{ 'Name': "NoOfTests", 'Type': "INT", 'Value' : len(testvars)}}
-	constants[2] = { 'Name': "NoOfInputs", 'Type': "INT", 'Value' : seqlen}
-	constants[3] = {'Name' : "TestVars", 'Type' : "ARRAY [1..NoOfTests,1..NoOfInputs] OF Vars"+testName, 'Value' : testvars}
+	constants[1] = { 'Name': "NoOfInputs", 'Type': "INT", 'Value' : seqlen}
+	constants[2] = {'Name' : "TestVars", 'Type' : "ARRAY [1..NoOfTests,1..NoOfInputs] OF Vars"+testName, 'Value' : testvars}
 	#print constants
 
 	return constants
@@ -34,8 +34,8 @@ def generateConst ():
 def generateVars():
 	
 	variables = {1:{ 'Name': instanceName, 'Type': fbName}}
-	variables[2] = { 'Name': 'ptrVars', 'Type': 'POINTER TO ' + testName + '_vars'}
-	variables[3] = { 'Name': 'i', 'Type': 'INT', 'Value' : "1"}
+	variables[1] = { 'Name': 'ptrVars', 'Type': 'POINTER TO ' + testName + '_vars'}
+	variables[2] = { 'Name': 'i', 'Type': 'INT', 'Value' : "1"}
 
 	
 	return variables

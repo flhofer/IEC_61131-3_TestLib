@@ -8,7 +8,7 @@ import test
 def getFunctionVars(columns):
     inputs = {}
     outputs= {}
-    number = 1
+    number = 0
     outtoin = False
     coliter = iter(columns)
     for col in coliter:
@@ -33,7 +33,7 @@ def getFunctionVars(columns):
                 if outtoin:
                     break
                 outtoin = True
-                number = 1
+                number = 0
     
     testTime = {"Name" : "testtime", "Type": "DWORD"}
     return [testTime, inputs, outputs]    
