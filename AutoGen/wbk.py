@@ -1,14 +1,14 @@
 '''
 Created on May 30, 2017
 
-@author: florian
+@author: Florian Hofer
 '''
 import test
 
 def getFunctionVars(columns):
     inputs = {}
     outputs= {}
-    number = 0
+    number = 1
     outtoin = False
     coliter = iter(columns)
     for col in coliter:
@@ -16,7 +16,7 @@ def getFunctionVars(columns):
             if not col == "#":
                 var = {"Name" : col}
                 try: 
-                    col = coliter.next()
+                    col = next(coliter)
                 except:
                     print ("end of line!!")
                     
@@ -33,7 +33,7 @@ def getFunctionVars(columns):
                 if outtoin:
                     break
                 outtoin = True
-                number = 0
+                number = 1
     
     testTime = {"Name" : "testtime", "Type": "DWORD"}
     return [testTime, inputs, outputs]    
@@ -46,7 +46,7 @@ def scanLine(columns, typeDef):
     
     i = 1
     cnt = 0
-    for type in typeDef[2]:
+    for ntype in typeDef[2]:
         var = {"Value": columns[i], "Type": columns[i+1]}
         outputs [cnt]= var.copy()
         var.clear()
@@ -55,7 +55,7 @@ def scanLine(columns, typeDef):
     
     i+=1 # skip the line with hash
     cnt = 0
-    for type in typeDef[1]:
+    for ntype in typeDef[1]:
         var = {"Value": columns[i]}
         inputs [cnt]= var.copy()
         var.clear()
@@ -73,7 +73,7 @@ def readSequence(sh, scanPos, typeDef):
         while (sh.nrows > scanPos):
             if (sh.cell(scanPos,1).value == ''):
                 break
-            sequence[cnt] = scanLine(sh.row_values(scanPos,0), typeDef)
+            sequence[cnt] = scanLine(sh.row_values(scanPos,1), typeDef)
             print ("New input found = " + str(sequence[cnt]))
             scanPos += 1
             cnt += 1
