@@ -58,7 +58,7 @@ def writeVariables (fileN, variables):
     for c in variables:
         text = "    " +  variables[c]['Name'] + " : " + variables[c]['Type']
         
-        if variables[c].has_key('Value'):
+        if 'Value' in variables[c]:
             text += " := "
             if type(variables[c]['Value']) != list:
                 text += str(variables[c]['Value'])
