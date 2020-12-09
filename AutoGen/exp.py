@@ -100,7 +100,7 @@ def createStateMachine(fileN, testName, instanceName, typeVar):
     fileN.write('    testInit(' + testName + ', NoOfTests)\n\n')
     fileN.write('    CASE _tls_ OF\n')
     fileN.write('    sT_INIT :    (* Reset *)\n')
-    fileN.write('                SysMemSet (ADR(fb_s_check_pressure), 0, SIZEOF(fb_s_check_pressure));\n')
+    fileN.write('                SysMemSet (ADR(' + instanceName + '), 0, SIZEOF(' + instanceName + '));\n')
     fileN.write('                testParam(pSteps, SIZEOF(Tests_Values)/NoOfTests/SIZEOF(Tests_Values[_tlt_,1]));\n')
     fileN.write('\n')
     fileN.write('    sT_RUN:    (* test run *)\n')
