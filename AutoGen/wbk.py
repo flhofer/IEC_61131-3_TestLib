@@ -69,12 +69,12 @@ def readSequence(sh, scanPos, typeDef):
     while sh.nrows> scanPos :    
         sequence = {}
         scanPos += 1
-        cnt = 1
+        cnt = 0
         print (sh.nrows)
         while (sh.nrows > scanPos):
             if (sh.cell(scanPos,1).value == ''):
                 break
-            sequence[cnt] = scanLine(sh.row_values(scanPos,1), typeDef)
+            sequence[cnt] = scanLine(sh.row_values(scanPos,0), typeDef)
             print ("New input found = " + str(sequence[cnt]))
             scanPos += 1
             cnt += 1

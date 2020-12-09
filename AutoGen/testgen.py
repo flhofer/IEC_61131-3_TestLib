@@ -50,7 +50,7 @@ testName = sh.cell(0,1).value
 fbName = sh.cell(0,4).value
 instanceName = sh.cell(0,6).value
 
-scanPos = 1
+scanPos = 0
 
 with open(testName + ".txt", "a") as testFile:
 	# test file is open, create header and lets scan for data!e
@@ -70,12 +70,12 @@ with open(testName + ".txt", "a") as testFile:
 	scanPos += 1 # next line, start to scan
 	
 	# build step dictionary
-	cnt = 1
+	cnt = 0
 	steps = {}
-	print scanPos
+	print (scanPos)
 	#while sh.nrows > scanPos:
 	steps[cnt] = wbk.readSequence(sh, scanPos, typeVar)
-	print scanPos
+	print (scanPos)
 
 	exp.writeConstatns(testFile, generateConst())
 	exp.writeVariables(testFile, generateVars())
