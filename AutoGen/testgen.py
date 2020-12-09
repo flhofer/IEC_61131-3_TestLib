@@ -72,35 +72,36 @@ instanceName = sh.cell(0,6).value
 
 scanPos = 0
 
-with open(testName + ".txt", "a") as testFile:
-	# test file is open, create header and lets scan for data!e
-	exp.createHeader(testFile, testName)
-	
-	while True:
-		state = sh.cell(scanPos,0).value
-		
-		if state != "State":
-			scanPos += 1
-		else:
-			break
-	
-	# found header, scan for labels.
-	typeVar = wbk.getFunctionVars(sh.row_values(scanPos, 2))
+testFile = exp.expWriter(testName=testName, fileName=testName)
 
-	scanPos += 1 # next line, start to scan
+# test file is open, create header and lets scan for data!e
+testFile.createHeader()
 	
-	# build step dictionary
-	cnt = 0
-	steps = {}
-	print (scanPos)
-	#while sh.nrows > scanPos:
-	steps[cnt] = wbk.readSequence(sh, scanPos, typeVar)
-	print (scanPos)
+while True:
+	state = sh.cell(scanPos,0).value
+	
+	if state != "State":
+		scanPos += 1
+	else:
+		break
+	
+# found header, scan for labels.
+typeVar = wbk.getFunctionVars(sh.row_values(scanPos, 2))
 
-	exp.writeConstatns(testFile, generateConst())
-	exp.writeVariables(testFile, generateVars())
-	exp.createStateMachine(testFile, testName, instanceName, typeVar)
-	exp.createFooter(testFile)
-	exp.createTestDUT(testFile, testName, typeVar)
+scanPos += 1 # next line, start to scan
+
+# build step dictionary
+cnt = 0
+steps = {}
+print (scanPos)
+#while sh.nrows > scanPos:
+steps[cnt] = wbk.readSequence(sh, scanPos, typeVar)
+print (scanPos)
+
+testFile.writeConstatns(generateConst())
+testFile.writeVariables(generateVars())
+testFile.createStateMachine(instanceName, typeVar)
+testFile.createFooter()
+testFile.createTestDUT(typeVar)
 
 testFile.close()

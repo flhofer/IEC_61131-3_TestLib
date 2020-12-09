@@ -28,7 +28,7 @@ class expWriter:
     def createHeader(self):
         """Create the EXP POU file header"""
         
-        print ("EXP header opening " + self.fileName + "...\n")
+        print ("EXP header opening " + self.testName + "...\n")
         header = "(* @NESTEDCOMMENTS := 'Yes' *)\n(* @PATH := '' *)\n(* @OBJECTFLAGS := '0, 8' *)\n(* @SYMFILEFLAGS := '2048' *)\n"
         header += "PROGRAM " + self.testName + "\n"
         self.testFile.write (header)
