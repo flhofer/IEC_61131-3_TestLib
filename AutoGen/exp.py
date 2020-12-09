@@ -15,22 +15,30 @@ if __name__ == '__main__':
     pass
 
 def createHeader (fileN, testName):
+    """Create the EXP file header"""
+    
     print ("EXP header opening " + testName + "...\n")
     header = "(* @NESTEDCOMMENTS := 'Yes' *)\n(* @PATH := '' *)\n(* @OBJECTFLAGS := '0, 8' *)\n(* @SYMFILEFLAGS := '2048' *)\n"
     header += "PROGRAM " + testName + "\n"
     fileN.write (header)
 
 def createFooter (fileN):
+    """Create the EXP file footer"""
+    
     print ("EXP footer closure...\n")
     todo()
     fileN.write("END_PROGRAM\n")    
     
 def endDeclaration (fileN):
+    """End of declaration header"""
+     
     print ("EXP end declaration...\n")
     todo()
     fileN.write("(* @END_DECLARATION := '0' *)\n")
 
 def writeConstatns (fileN, constants):
+    """Write test values and size constants to file"""
+    
     print ("export constants to EXP...\n")
     fileN.write("VAR CONSTANT\n")
     
@@ -56,6 +64,8 @@ def writeConstatns (fileN, constants):
     fileN.write("END_VAR\n")
     
 def writeVariables (fileN, variables):
+    """Write test variables needed for test execution"""
+    
     print ("export variables to EXP...\n")
     fileN.write("VAR\n")
     
@@ -84,6 +94,8 @@ def writeVariables (fileN, variables):
     fileN.write("END_VAR\n")
     
 def createStateMachine(fileN, testName, instanceName, typeVar):
+    """Create test state machine, main test execution"""
+    
     print ("Create state machine for testing...\n")
     fileN.write('    testInit(' + testName + ', NoOfTests)\n\n')
     fileN.write('    CASE _tls_ OF\n')
@@ -110,6 +122,8 @@ def createStateMachine(fileN, testName, instanceName, typeVar):
     fileN.write('    sTC_PASS: Pass := TRUE;\n    END_CASE\n')
     
 def createTestDUT(fileN, testName, typeVar):
+    """Create test variable data type for the test parameter table"""
+    
     print ("Writing data type used for the test to file..")
 
     fileN.write("(* @NESTEDCOMMENTS := 'Yes' *)\n")
