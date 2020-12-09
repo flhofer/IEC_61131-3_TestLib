@@ -18,7 +18,7 @@ def getFunctionVars(columns):
                 try: 
                     col = coliter.next()
                 except:
-                    print "end of line!!"
+                    print ("end of line!!")
                     
                 if col != None:
                     var["Type"] = col
@@ -70,12 +70,12 @@ def readSequence(sh, scanPos, typeDef):
         sequence = {}
         scanPos += 1
         cnt = 1
-        print sh.nrows
+        print (sh.nrows)
         while (sh.nrows > scanPos):
             if (sh.cell(scanPos,1).value == ''):
                 break
             sequence[cnt] = scanLine(sh.row_values(scanPos,1), typeDef)
-            print "New input found = " + str(sequence[cnt])
+            print ("New input found = " + str(sequence[cnt]))
             scanPos += 1
             cnt += 1
         

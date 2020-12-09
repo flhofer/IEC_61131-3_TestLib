@@ -5,29 +5,29 @@ Created on May 26, 2017
 '''
 
 from test import todo
-from __builtin__ import int, list
+from builtins import list
 
 if __name__ == '__main__':
     pass
 
 def createHeader (fileN, testName):
-    print "EXP header opening " + testName + "...\n"
+    print ("EXP header opening " + testName + "...\n")
     header = "(* @NESTEDCOMMENTS := 'Yes' *)\n(* @PATH := '' *)\n(* @OBJECTFLAGS := '0, 8' *)\n(* @SYMFILEFLAGS := '2048' *)\n"
     header += "PROGRAM " + testName + "\n"
     fileN.write (header)
 
 def createFooter (fileN):
-    print "EXP footer closure...\n"
+    print ("EXP footer closure...\n")
     todo()
     fileN.write("END_PROGRAM\n")    
     
 def endDeclaration (fileN):
-    print "EXP end declaration...\n"
+    print ("EXP end declaration...\n")
     todo()
     fileN.write("(* @END_DECLARATION := '0' *)\n")
 
 def writeConstatns (fileN, constants):
-    print "export constants to EXP...\n"
+    print ("export constants to EXP...\n")
     fileN.write("VAR CONSTANT\n")
     
     for c in constants:
@@ -52,7 +52,7 @@ def writeConstatns (fileN, constants):
     fileN.write("END_VAR\n")
     
 def writeVariables (fileN, variables):
-    print "export variables to EXP...\n"
+    print ("export variables to EXP...\n")
     fileN.write("VAR\n")
     
     for c in variables:
@@ -80,7 +80,7 @@ def writeVariables (fileN, variables):
     fileN.write("END_VAR\n")
     
 def createStateMachine(fileN, testName, instanceName, typeVar):
-    print "Create state machine for testing...\n"
+    print ("Create state machine for testing...\n")
     fileN.write('    testInit(' + testName + ', NoOfTests)\n\n')
     fileN.write('    CASE _tls_ OF\n')
     fileN.write('    sT_INIT :    (* Reset *)\n')
@@ -106,7 +106,7 @@ def createStateMachine(fileN, testName, instanceName, typeVar):
     fileN.write('    sTC_PASS: Pass := TRUE;\n    END_CASE\n')
     
 def createTestDUT(fileN, testName, typeVar):
-    print "Writing data type used for the test to file.."
+    print ("Writing data type used for the test to file..")
 
     fileN.write("(* @NESTEDCOMMENTS := 'Yes' *)\n")
     fileN.write("(* @PATH := '' *)\n")
