@@ -36,8 +36,8 @@ def generateConst (steps):
 		testvars.append(testvar)
 	
 	# Finally, return the constants for test function 
-	constants = {0:{ 'Name': "NoOfTests",	'Type': "INT", 'Value' : len(testvars)}}
-	constants[1] = { 'Name': "NoOfInputs",	'Type': "INT", 'Value' : seqlen}
+	constants = {0:{ 'Name': "NoOfTests",	'Type': "USINT", 'Value' : len(testvars)}}
+	constants[1] = { 'Name': "NoOfInputs",	'Type': "USINT", 'Value' : seqlen}
 	constants[2] = { 'Name': "TestVars",	'Type': "ARRAY [1..NoOfTests,1..NoOfInputs] OF Vars" + wbk.testName, 'Value' : testvars}
 	#print constants
 
@@ -79,6 +79,7 @@ for wbk in wbkiter:
 		
 	testFile.writeConstatns(generateConst(steps))
 	testFile.writeVariables(generateVars())
+	testFile.endDeclaration()
 	testFile.createStateMachine(wbk.instanceName, typeVar)
 	testFile.createFooter()
 	testFile.createTestDUT(typeVar)

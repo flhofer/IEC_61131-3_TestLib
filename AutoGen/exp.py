@@ -50,21 +50,25 @@ class ExpWriter(ExportWriter):
     
     def createHeader(self):
         """Create the EXP POU file header"""
-        
+        #TODO: parameter writer
         print ("EXP header opening " + self.testName + "...\n")
-        header = "(* @NESTEDCOMMENTS := 'Yes' *)\n(* @PATH := '' *)\n(* @OBJECTFLAGS := '0, 8' *)\n(* @SYMFILEFLAGS := '2048' *)\n"
-        header += "PROGRAM " + self.testName + "\n"
-        self._write(header)
+        self._write("(* @NESTEDCOMMENTS := 'Yes' *)\n")
+        self._write("(* @PATH := '' *)\n")
+        self._write("(* @OBJECTFLAGS := '0, 8' *)\n")
+        self._write("(* @SYMFILEFLAGS := '2048' *)\n")
+        self._write("PROGRAM " + self.testName + "\n")
     
     def createFooter(self):
         """Create the EXP file footer"""
-        
+        #TODO: parameter writer
+       
         print ("EXP POU footer closure...\n")
         self._write("END_PROGRAM\n")    
         
     def endDeclaration(self):
         """End of declaration header"""
-         
+        #TODO: parameter writer
+        
         print ("EXP end declaration...\n")
         self._write("(* @END_DECLARATION := '0' *)\n")
     
@@ -99,31 +103,38 @@ class ExpWriter(ExportWriter):
         """Write test variables needed for test execution"""
         
         print ("export variables to EXP...\n")
+        self._write("VAR_OUTPUT\n")
+        self._write("Pass: BOOL;\n", indent=1)
+        self._write("END_VAR\n")
         self._write("VAR\n")
         
+        self.indent=2
+
         for c in variables:
-            text = "    " +  variables[c]['Name'] + " : " + variables[c]['Type']
+            self._write(variables[c]['Name'] + " : " + variables[c]['Type'], indent=1)
             
             if 'Value' in variables[c]:
-                text += " := "
+                self._write(" := ", indent=0);
                 if type(variables[c]['Value']) != list:
-                    text += str(variables[c]['Value'])
+                    self._write(str(variables[c]['Value']), indent=0)
                 else:
                     i = 0
+                    self._write('\n',indent=0)
                     for v in variables[c]['Value']:
                         i+=1
-                        text += "\n        (* Test case" + str(i) + "*)"
+                        self._write("(* Test case" + str(i) + "*)")
+                        
                         end = False
                         for w in v:
                             if end:
-                                text += ",\n"
-                            text += "        " + w
+                                self._write(",\n",indent=0)
+                            self._write(w)
                             end = True
                         
-            text += ";\n"
-                        
-            self._write(text)
+            self._write(";\n", indent=0)
+        self.indent=0                       
         self._write("END_VAR\n")
+
         
     def createStateMachine(self, instanceName, typeVar):
         """Create test state machine, main test execution"""
@@ -161,6 +172,7 @@ class ExpWriter(ExportWriter):
         
         print ("Writing data type used for the test to file..")
     
+        #TODO: parameter writer
         self._write("(* @NESTEDCOMMENTS := 'Yes' *)\n")
         self._write("(* @PATH := '' *)\n")
         self._write("(* @OBJECTFLAGS := '0, 8' *)\n")
