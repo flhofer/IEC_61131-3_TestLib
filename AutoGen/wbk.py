@@ -144,6 +144,7 @@ class Workbook:
         return sequence
 
     def readSequences(self, typeDef):
+        """Read all sequences in a test configuration sheet"""
         
         cnt = 0
         steps = {}
