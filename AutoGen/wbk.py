@@ -129,17 +129,14 @@ class Workbook:
         """Read a test sequence in spreadsheet, group them into a value set"""
         
         sequence = {}
-        while self.sh.nrows> self.scanPos :    
+        cnt = 0
+        while (self.sh.nrows > self.scanPos):
+            if (self.sh.cell(self.scanPos,1).value == ''):
+                break
+            sequence[cnt] = self.scanLine(self.sh.row_values(self.scanPos,1), typeDef)
+            print ("New input found = " + str(sequence[cnt]))
             self.scanPos += 1
-            cnt = 0
-            print (self.sh.nrows)
-            while (self.sh.nrows > self.scanPos):
-                if (self.sh.cell(self.scanPos,1).value == ''):
-                    break
-                sequence[cnt] = self.scanLine(self.sh.row_values(self.scanPos,1), typeDef)
-                print ("New input found = " + str(sequence[cnt]))
-                self.scanPos += 1
-                cnt += 1
+            cnt += 1
             
         return sequence
 
@@ -153,6 +150,8 @@ class Workbook:
             steps[cnt] = self.readSequence(typeDef)
             if steps[cnt] == {}:
                 del steps[cnt]
-            cnt+=1
+            else:
+                cnt+=1
+            self.scanPos+=1 # skip empty line
         
         return steps
