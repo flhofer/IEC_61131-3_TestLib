@@ -8,7 +8,7 @@
 # email info@florianhofer.it
 # -----------------------------------------------------------
 
-from exp import expWriter
+from exp import ExpWriter
 from wbk import workbook
 
 def generateConst (steps):
@@ -66,7 +66,7 @@ wbkiter = iter(wb)
 #iterate though sheets
 for wbk in wbkiter:
 	# TODO: create multiple tests per sheet, continue on next sheet with new file	
-	testFile = expWriter(testName=wbk.testName, fileName=wbk.testName)
+	testFile = ExpWriter(testName=wbk.testName, fileName=wbk.testName)
 	
 	# test file is open, create header and lets scan for data!e
 	testFile.createHeader()
