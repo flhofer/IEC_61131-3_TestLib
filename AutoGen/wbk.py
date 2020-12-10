@@ -11,7 +11,7 @@
 import xlrd
 import os.path
 
-class workbook:
+class Workbook:
     
     def __readBaseParams(self):
         """Read header info and reset counters"""

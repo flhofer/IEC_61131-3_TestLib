@@ -9,7 +9,7 @@
 # -----------------------------------------------------------
 
 from exp import ExpWriter
-from wbk import workbook
+from wbk import Workbook
 
 def generateConst (steps):
 	"""Generate constant values for the test
@@ -56,10 +56,10 @@ def generateVars():
 """
 Main program
 
-Read test workbook and generate test cases/import for the IEC61131-3
+Read test Workbook and generate test cases/import for the IEC61131-3
 """ 
 
-wb = workbook('test_unit.xlsx')
+wb = Workbook('test_unit.xlsx')
 
 wbkiter = iter(wb)
 
