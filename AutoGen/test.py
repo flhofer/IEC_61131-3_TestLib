@@ -7,4 +7,7 @@
 # Released under GNU Public License (GPL)
 # email info@florianhofer.it
 # -----------------------------------------------------------
-    
+
+class Test:
+    """Test object that contains information on a test POU""" 
+    pass    
