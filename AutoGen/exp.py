@@ -141,7 +141,7 @@ class ExpWriter(ExportWriter):
         
         print ("Create state machine for testing...\n")
         self.indent = 1;
-        self._write('testInit(' + self.testName + ', NoOfTests)\n\n')
+        self._write("testInit('" + self.testName + "', NoOfTests)\n\n")
         self._write('CASE _tls_ OF\n')
         self._write('sT_INIT:    (* Reset *)\n')
         self.indent = 4;
