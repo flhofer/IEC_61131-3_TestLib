@@ -1,0 +1,4 @@
+{SCL_OverwriteBlocks := 'y' ; SCL_CreateDebugInfo := 'y'}
+_tl_assertStats
+_tl_global
+TestCase

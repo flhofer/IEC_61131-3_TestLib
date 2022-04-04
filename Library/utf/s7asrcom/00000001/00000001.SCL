@@ -1,0 +1,41 @@
+FUNCTION_BLOCK TestCase
+TITLE = 'APTest TestCase program'
+NAME : 'TestCase'
+FAMILY : 'APTest'
+VERSION : '1.0'
+AUTHOR : 'FlorianH'
+
+CONST
+    _tl_assertsPerTest  := 3;
+    _tl_testCases       := 9;
+    _tl_testMessages    := 63;
+    _delayScale         := 1;    (* example 1 for ms, 1000 for sec, or simply multiplier of cycles *)
+    _delayIsTime        := FALSE; (* Execution time delay or execution counter delay selection *)
+END_CONST
+
+//VAR_TEMP
+    // output LOG 
+//    testLogP    : POINTER ;
+//END_VAR 
+VAR    
+    
+    testLog     : ARRAY[1.._tl_testMessages] OF STRING[25];
+
+    Tests: ARRAY [0.._tl_testCases] OF STRUCT     
+            TestName     : STRING[10];        // Name of the test 
+            ExecCounter  : BYTE := 0;         // 0 = no executions jet, > no OF exec      
+            StartTime    : TIME;              // TIME in ms OF the start OF the test, based on TIME()      
+            EndTime      : DWORD;             // sets a minimum TIME FOR the test step TO survive, also timeout 
+            State        : BYTE := 0;         // Test CASE AND test state      
+            Result       : BYTE := 0;         // Result, _tlState      
+            TestCounter  : BYTE := 0;         // Test Number, in the test CASE     
+            TestStep     : BYTE := 0;         // Actual test step      
+            TestCount    : BYTE := 1;         // Total tests FOR this tc      
+            TestSteps    : BYTE := 1;         // Total test steps      
+            AssertStats  : ARRAY [0.._tl_assertsPerTest] OF _tl_assertStats; // assert memory         
+        END_STRUCT; 
+END_VAR
+
+BEGIN
+    ;
+END_FUNCTION_BLOCK

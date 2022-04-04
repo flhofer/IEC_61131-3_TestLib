@@ -1,0 +1,12 @@
+TYPE _tl_assertStats 
+TITLE = 'TL_stats'
+NAME : 'TL_stats'
+FAMILY : 'APTest'
+VERSION : 1.0
+AUTHOR : 'FlorianH'
+STRUCT     
+    Trig      : BOOL;   // Assertion triggered
+    Done      : BOOL;   // Assertion done
+    Success   : BOOL;   // Assertion result
+END_STRUCT 
+END_TYPE
