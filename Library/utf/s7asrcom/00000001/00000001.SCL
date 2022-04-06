@@ -11,31 +11,418 @@ CONST
     _tl_testMessages    := 63;
     _delayScale         := 1;    (* example 1 for ms, 1000 for sec, or simply multiplier of cycles *)
     _delayIsTime        := FALSE; (* Execution time delay or execution counter delay selection *)
+
+
+    (* ------------- STATE MACHINE ------------- *)
+    (* States for the state machines, Test case and test *)
+    sTC_ND         :=16#00;
+
+    (* Test Startup *)
+    sT_INIT         :=16#01;
+    sT_WAIT         :=16#02;
+    sT_START     :=16#03;
+    sT_RUN         :=16#04;
+
+    (* Test Shutdown *)
+    sT_ABORT     :=16#08;
+    sT_STOP         :=16#09;
+    sT_END         :=16#0A;
+    sT_DEINIT     :=16#0B;
+
+    (* Test Results *)
+    sT_PASS         :=16#0C;
+    sT_FAIL         :=16#0D;
+    sT_ERROR     :=16#0E;
+
+    (* Test Case Startup *)
+    sTC_INIT     :=16#10;
+    sTC_WAIT     :=16#20;
+    sTC_START     :=16#30;
+    sTC_RUN         :=16#40;
+
+
+    (* Test Case Shutdown *)
+    sTC_ABORT     :=16#80;
+    sTC_STOP     :=16#90;
+    sTC_END         :=16#A0;
+    sTC_DEINIT     :=16#B0;
+
+    (* Test case Results *)
+    sTC_PASS     :=16#C0;
+    sTC_FAIL     :=16#D0;
+    sTC_ERROR     :=16#E0;
+
+    (* Parameters for settings of test cases *)
+    pTESTS         := 0;    (* sets the number of tests in this test case/suite, default = 1 *)
+    pSTEPS         := 1;    (* sets the number of steps in this test, default = 1 *)
+    pWTIME         := 2;    (* sets the waiting time fot the startup *)
+    pSTIME         := 3;    (* sets the step time, timeout value for this step, default last assert *)
+    pREADY         := 4;    (* preps ready, 0 = false, 1 = true, default = true *)
+    pGETN         := 5;     (* get continuous array number based on sizes of generated arrays *)
+
+    (* Parameters for GenArray, setting of mode *)
+    tRndReal     := 1;
+    tRndDint     := 2;
+    tLinReal     := 3;
+    tLinDint     := 4;
+    tTupReal     := 5;
+    tTupDint     := 6;
+
+    (* Parameters for asserts, setting of verification type *)
+    mEQ             := 16#0000000;
+    mLT             := 16#1000000;
+    mGT             := 16#2000000;
+    mLEQ         := 16#3000000;
+    mGEQ         := 16#4000000;
+    mBTW         := 16#5000000; (* not implemented yet *)
+    mVFY         := 16#00000000;
+    mBEFORE         := 16#10000000;
+    mAFTER         := 16#20000000;
+    mAT             := 16#30000000;
+    mBFRNG         := 16#50000000;
+    mAFTRNG         := 16#60000000;
+    mATRNG         := 16#70000000;
+    (* bits for mode masks *)
+    bBefore        := 28;
+    bAfter         := 29;
+    bRange         := 30;
 END_CONST
 
-//VAR_TEMP
-    // output LOG 
-//    testLogP    : POINTER ;
-//END_VAR 
+VAR_INPUT
+    (* Generic Parameters for calls *)
+    (* description can be found in each action/pou *)
+    Value : BOOL;
+    Parm1 : DWORD;
+    Parm2 : DWORD;
+    (* these parameters may be reused as variables inside the code, BEWARE *)
+    (* Used for copyByte *)
+    printString : STRING[10];                    (* Print string, string we are using as dummy string for the copying process *)
+END_VAR
+VAR_OUTPUT
+    RetVal: DINT;
+END_VAR
+
 VAR    
     
-    testLog     : ARRAY[1.._tl_testMessages] OF STRING[25];
-
-    Tests: ARRAY [0.._tl_testCases] OF STRUCT     
+    tCase       : INT := 16#0;                // number actual test CASE, used NOW *)
+    assert      : INT := 16#0;                // number actual assertion OF test CASE, used sequentially, *NOW* *)
+    testLogLine : INT := 16#0;                // actual line, write TO, in testlog
+    testCaseMem: ARRAY [0.._tl_testCases] OF STRUCT   (* Memory for test cases, limited by constant *)   
             TestName     : STRING[10];        // Name of the test 
-            ExecCounter  : BYTE := 0;         // 0 = no executions jet, > no OF exec      
+            ExecCounter  : INT := 0;         // 0 = no executions jet, > no OF exec      
             StartTime    : TIME;              // TIME in ms OF the start OF the test, based on TIME()      
             EndTime      : DWORD;             // sets a minimum TIME FOR the test step TO survive, also timeout 
             State        : BYTE := 0;         // Test CASE AND test state      
             Result       : BYTE := 0;         // Result, _tlState      
-            TestCounter  : BYTE := 0;         // Test Number, in the test CASE     
-            TestStep     : BYTE := 0;         // Actual test step      
-            TestCount    : BYTE := 1;         // Total tests FOR this tc      
-            TestSteps    : BYTE := 1;         // Total test steps      
+            TestCounter  : INT := 0;         // Test Number, in the test CASE     
+            TestStep     : INT := 0;         // Actual test step      
+            TestCount    : INT := 1;         // Total tests FOR this tc      
+            TestSteps    : INT := 1;         // Total test steps      
             AssertStats  : ARRAY [0.._tl_assertsPerTest] OF _tl_assertStats; // assert memory         
         END_STRUCT; 
+    testLog     : ARRAY[1.._tl_testMessages] OF STRING[25];    (* Test execution log, general, for all test cases *)
+//    ptrByte1    : POINTER TO BYTE;
+ //   ptrByte2    : POINTER TO BYTE;
+    FieldCounter: BYTE := 1;
+    after : BOOL;
+    before: BOOL;
+
+    SysMemSet1 : SysMemSet;
 END_VAR
 
 BEGIN
-    ;
+    (* State Machine for test cases*)
+    (* --- input parameters --- *)
+    (* Parm1 = No of total tests *)
+    (* --- output values --- *)
+    (* RetVal = state *)
+    
+    (* Reset asserts pointer to the first *)
+    assert := 0;
+    (* Reset field counter for field assignments *)
+    FieldCounter := 1;
+    
+    (* NOTE that the code MAXMoutside gets the new state first! this to be able to react and avoid transitions *)
+    
+    (* Call, next step in a row *) 
+    CASE BYTE_TO_INT(testCaseMem[tCase].State AND 16#F0) OF
+        sTC_ND:     (* Freshly initialized? Eventual variable creation *)
+                    testCaseMem[tCase].TestCount := MAX(IN1:= 16#1, IN2:= DWORD_TO_INT(Parm1));
+                    testCaseMem[tCase].TestCounter := 1;
+                    testCaseMem[tCase].State := INT_TO_BYTE(BYTE_TO_INT(testCaseMem[tCase].State) + 16#10);
+                    RetVal := BYTE_TO_INT(testCaseMem[tCase].State AND 16#F0);
+    
+        sTC_INIT,    (* Test Case Startup *)
+        sTC_WAIT :    (* Eventually fro group testing *);
+                    (* Goto next Step *)
+                    testCaseMem[tCase].State := INT_TO_BYTE(BYTE_TO_INT(testCaseMem[tCase].State) + 16#10);
+                    RetVal := BYTE_TO_INT(testCaseMem[tCase].State AND 16#F0);
+    
+        sTC_START :    RetVal := sTC_RUN;
+                    testCaseMem[tCase].State := INT_TO_BYTE(BYTE_TO_INT(testCaseMem[tCase].State) + 16#10) AND 16#F0;
+    
+        sTC_RUN :    CASE BYTE_TO_INT(testCaseMem[tCase].State AND 16#F) OF
+    
+                        sTC_ND     :    (* Freshly initialized? Eventual variable creation *)
+                                    testCaseMem[tCase].TestStep := 1; 
+                                    testCaseMem[tCase].TestSteps := 1;
+                                    testCaseMem[tCase].State := INT_TO_BYTE(BYTE_TO_INT(testCaseMem[tCase].State) + 1);
+    
+                                    (* Store actual time for delay calculations *)
+                                    testCaseMem[tCase].StartTime := TIME_TCK();
+                                    testCaseMem[tCase].ExecCounter := 1;
+                                    RetVal := sT_INIT;
+    
+                        (* Test Startup *)
+                        sT_INIT :    testCaseMem[tCase].ExecCounter := testCaseMem[tCase].ExecCounter + 1;
+                                    IF _delayIsTime AND DWORD_TO_DINT(testCaseMem[tCase].EndTime) <= TIME_TO_DINT(TIME_TCK())
+                                       OR NOT _delayIsTime AND DWORD_TO_DINT(testCaseMem[tCase].EndTime) < testCaseMem[tCase].ExecCounter THEN
+    
+                                        (* Set testcounter to the next one *)
+                                        testCaseMem[tCase].State := INT_TO_BYTE(BYTE_TO_INT(testCaseMem[tCase].State) + 1);
+                                        (* Clean assert memory *)
+                                        SysMemSet1( pDest := testCaseMem[tCase].AssertStats, bCharacter :=  0, iCount := _tl_assertsPerTest);
+    
+                                        (* Store Test timing information *)
+                                        testCaseMem[tCase].StartTime := TIME_TCK();
+                                        testCaseMem[tCase].EndTime := 0;
+                                        testCaseMem[tCase].ExecCounter := 1;
+    
+                                        (* Return result to function call, >= 0 is new value array *)
+                                        RetVal := sT_WAIT;
+                                    ELSE
+                                        RetVal := sT_INIT;
+                                    END_IF;
+    
+    
+                        sT_WAIT    :    (* Wait for x time or ececutions *)
+                                    RetVal := sT_WAIT;
+                                    testCaseMem[tCase].ExecCounter := testCaseMem[tCase].ExecCounter + 1;
+                                    IF _delayIsTime AND DWORD_TO_DINT(testCaseMem[tCase].EndTime) <= TIME_TO_DINT(TIME_TCK())
+                                       OR NOT _delayIsTime AND DWORD_TO_DINT(testCaseMem[tCase].EndTime) < testCaseMem[tCase].ExecCounter THEN
+                                        (* Example wait for time *)
+                                        testCaseMem[tCase].State := INT_TO_BYTE(BYTE_TO_INT(testCaseMem[tCase].State) + 1);
+                                        testCaseMem[tCase].EndTime := 0;
+                                        RetVal := sT_START;
+                                    END_IF;
+    
+    
+                        sT_START :    (* Prepare, reset counters prev used for delay check *)
+                                    testCaseMem[tCase].StartTime := TIME_TCK();
+                                    testCaseMem[tCase].ExecCounter := 1;
+    
+                                    testCaseMem[tCase].State := INT_TO_BYTE(BYTE_TO_INT(testCaseMem[tCase].State) + 1);
+                                    RetVal := sT_RUN;
+    
+                        sT_RUN :    (* Changes the state according to the actual pass fail values*)
+                                    assert := 0;
+                                    RetVal := 0;
+                                    Value := TRUE; (* reuse value as pass-Fail flag *)
+    
+                                    REPEAT
+                                        RetVal := RetVal - BOOL_TO_DINT(NOT testCaseMem[tCase].AssertStats[assert].Done);
+                                        Value := Value AND testCaseMem[tCase].AssertStats[assert].Success;
+                                        assert := assert + 1;
+                                    UNTIL assert > _tl_assertsPerTest OR NOT testCaseMem[tCase].AssertStats[assert].Trig
+                                    END_REPEAT;
+                                    assert := 0;
+    
+                                    (* update counter*)
+                                    testCaseMem[tCase].ExecCounter := testCaseMem[tCase].ExecCounter + 1;
+    
+                                    IF RetVal = 0 AND                                    (* All asserts done *)
+                                        (_delayIsTime AND DWORD_TO_DINT(testCaseMem[tCase].EndTime) <= TIME_TO_DINT(TIME_TCK())
+                                        OR NOT _delayIsTime AND DWORD_TO_DINT(testCaseMem[tCase].EndTime) < testCaseMem[tCase].ExecCounter) THEN
+                                        (* reset endtime, 0= as asserts are done *)
+                                        testCaseMem[tCase].EndTime := 0;
+    
+                                        IF Value THEN
+                                            testCaseMem[tCase].TestStep := testCaseMem[tCase].TestStep + 1;
+                                            IF testCaseMem[tCase].TestStep > testCaseMem[tCase].TestSteps THEN
+                                                (* done + pass *)
+                                                testCaseMem[tCase].State := INT_TO_BYTE(BYTE_TO_INT(testCaseMem[tCase].State AND 16#F0) + sT_PASS);
+                                                RetVal := sT_PASS;
+                                            ELSE
+                                                (* Clean assert memory *)
+                                                SysMemSet1( pDest := testCaseMem[tCase].AssertStats, bCharacter := 0, iCount:= _tl_assertsPerTest );
+                                                
+                                                (* Store Test starting time *)
+                                                testCaseMem[tCase].StartTime := TIME_TCK();
+                                                testCaseMem[tCase].ExecCounter := 1;
+    
+                                                RetVal := sT_RUN;
+                                            END_IF;
+                                        ELSE
+                                            (* done + fail *)
+                                            testCaseMem[tCase].State := INT_TO_BYTE(BYTE_TO_INT(testCaseMem[tCase].State AND 16#F0) + sT_FAIL);
+                                            RetVal := sT_FAIL;
+                                        END_IF;
+                                    ELSE
+                                        (* Continue... *)
+                                        RetVal := sT_RUN;
+                                    END_IF;
+    
+                        (* Test Results *)
+                        sT_PASS    :   logPrint( Value := TRUE );
+                                    testCaseMem[tCase].Result := INT_TO_BYTE(MAX ( IN1:= BYTE_TO_INT(testCaseMem[tCase].Result), IN2:= sT_PASS));
+                                    testCaseMem[tCase].State := INT_TO_BYTE(BYTE_TO_INT(testCaseMem[tCase].State) - 3);
+                                    RetVal := sT_STOP;
+    
+                        sT_FAIL,
+                        sT_ERROR :    logPrint( Value := FALSE );
+                                    testCaseMem[tCase].Result := INT_TO_BYTE(MAX ( IN1:= BYTE_TO_INT(testCaseMem[tCase].Result), IN2 := BYTE_TO_INT(testCaseMem[tCase].State AND 16#F)));
+                                    testCaseMem[tCase].State := INT_TO_BYTE(BYTE_TO_INT(testCaseMem[tCase].State AND 16#F0) + sT_ABORT);
+                                    RetVal := sT_ABORT;
+    
+                        (* Test Shutdown *)
+                        sT_ABORT,
+                        sT_STOP,
+                        sT_END :    testCaseMem[tCase].State := INT_TO_BYTE(BYTE_TO_INT(testCaseMem[tCase].State) + 1);
+                                    RetVal := BYTE_TO_INT(testCaseMem[tCase].State AND 16#F);
+    
+                        sT_DEINIT : IF _delayIsTime AND DWORD_TO_DINT(testCaseMem[tCase].EndTime) <= TIME_TO_DINT(TIME_TCK())
+                                       OR NOT _delayIsTime AND DWORD_TO_DINT(testCaseMem[tCase].EndTime) <= testCaseMem[tCase].ExecCounter THEN
+    
+                                        IF testCaseMem[tCase].TestCounter < testCaseMem[tCase].TestCount THEN
+                                            testCaseMem[tCase].TestCounter := testCaseMem[tCase].TestCounter + 1;
+                                            testCaseMem[tCase].TestStep := 1;
+                                            testCaseMem[tCase].TestSteps := 1;
+                                            testCaseMem[tCase].State := INT_TO_BYTE(BYTE_TO_INT(testCaseMem[tCase].State AND 16#F0) + sT_INIT);
+                                            RetVal := sT_INIT;
+                                        ELSE
+                                            testCaseMem[tCase].State := INT_TO_BYTE(BYTE_TO_INT(testCaseMem[tCase].State AND 16#F) + sTC_STOP);
+                                            RetVal := sTC_STOP;
+                                        END_IF;
+                                    ELSE
+                                        RetVal := sT_DEINIT;
+                                    END_IF;
+                    END_CASE;
+    
+        (* Test Case Shutdown *)
+        sTC_ABORT,
+        sTC_STOP,
+        sTC_END :    testCaseMem[tCase].State := INT_TO_BYTE(BYTE_TO_INT(testCaseMem[tCase].State) + 16#10);
+                    RetVal := BYTE_TO_INT(testCaseMem[tCase].State AND 16#F0);
+    
+        sTC_DEINIT :IF BYTE_TO_INT(testCaseMem[tCase].Result) < sT_PASS THEN
+                        testCaseMem[tCase].Result := sTC_ERROR;
+                    END_IF;
+                    testCaseMem[tCase].State := SHL(IN := testCaseMem[tCase].Result, N:= 4);
+                    RetVal := BYTE_TO_INT(testCaseMem[tCase].State AND 16#F0);
+    
+        (* Test case Results *)
+        sTC_PASS,
+        sTC_FAIL,
+        sTC_ERROR :  RetVal := BYTE_TO_INT(testCaseMem[tCase].State AND 16#F0);
+    
+    END_CASE;
+    
+    (* Set the global test values for this test case *)
+    "_tl_global"._tls := DINT_TO_BYTE(RetVal);
+    "_tl_global"._tlt := INT_TO_BYTE(testCaseMem[tCase].TestCounter);
+    "_tl_global"._tlp := INT_TO_BYTE(testCaseMem[tCase].TestStep);
+    
+    // ELSE -- assertThat
+    
+ (*       (* --- input parameters --- *)
+    (* Parm1 is the checking mode *)
+    (* Parm2 = Delay of check in Cycles or time *)
+    (* --- output values --- *)
+    (* RetVal: 1 = executed, negative=error information *)
+    
+    RetVal := 1;
+    
+    before := (_delayIsTime AND TIME_TO_UDINT(TIME() - testCaseMem[tCase].StartTime) <= Parm2 + (Parm1 AND 16#FFFFFF) * _delayScale * BOOL_TO_UDINT(Parm1.bRange))
+                OR (NOT _delayIsTime AND testCaseMem[tCase].ExecCounter <= Parm2 + (Parm1 AND 16#FFFFFF) * _delayScale * BOOL_TO_UDINT(Parm1.bRange));
+    
+    after := (_delayIsTime AND TIME_TO_UDINT(TIME() - testCaseMem[tCase].StartTime) >= Parm2 - (Parm1 AND 16#FFFFFF) * _delayScale * BOOL_TO_UDINT(Parm1.bRange))
+                OR (NOT _delayIsTime AND testCaseMem[tCase].ExecCounter >= Parm2 - (Parm1 AND 16#FFFFFF) * _delayScale * BOOL_TO_UDINT(Parm1.bRange));
+    
+    
+    IF  Parm1.bAfter AND after AND (NOT before OR (Parm1.bRange AND testCaseMem[tCase].AssertStats[assert].Done)) OR
+        Parm1.bBefore AND NOT after AND before THEN
+        IF NOT Value AND (after AND Parm1.bAfter OR before AND Parm1.bBefore AND NOT Parm1.bAfter)
+             OR Value AND before AND NOT after AND Parm1.bBefore AND Parm1.bAfter THEN
+    
+        (* NOT Value AND (Parm1.bBefore XOR Parm1.bAfter) OR Value AND Parm1.bBefore AND Parm1.bAfter THEN *)
+            (* First execution triggered and value = false *)
+    (*        testCaseMem[tCase].AssertStats[assert].Count := MIN(testCaseMem[tCase].AssertStats[assert].Count + 1, 255); *)
+            testCaseMem[tCase].AssertStats[assert].Done := TRUE;
+            testCaseMem[tCase].AssertStats[assert].Success := FALSE;
+            RetVal := -2;
+        END_IF
+    
+    (*    IF testCaseMem[tCase].AssertStats[assert].Count >= LIMIT (1, Parm1 AND 16#FF, 255) THEN
+            testCaseMem[tCase].AssertStats[assert].Done := TRUE;
+            testCaseMem[tCase].AssertStats[assert].Success := FALSE;
+            RetVal := -2;
+        END_IF*)
+    END_IF
+    
+    
+    testCaseMem[tCase].AssertStats[assert].Trig := testCaseMem[tCase].AssertStats[assert].Trig OR Parm1.bBefore OR after;
+    IF testCaseMem[tCase].AssertStats[assert].Trig AND NOT testCaseMem[tCase].AssertStats[assert].Done THEN
+        testCaseMem[tCase].AssertStats[assert].Done :=    after AND (before OR NOT Parm1.bBefore OR NOT Parm1.bAfter);
+        testCaseMem[tCase].AssertStats[assert].Success := testCaseMem[tCase].AssertStats[assert].Success OR (value AND testCaseMem[tCase].AssertStats[assert].Done);
+        (*
+        IF testCaseMem[tCase].AssertStats[assert].Done AND NOT testCaseMem[tCase].AssertStats[assert].Success THEN
+            Parm1 := Parm1;
+        END_IF
+    
+        IF testCaseMem[tCase].AssertStats[assert].Done AND testCaseMem[tCase].AssertStats[assert].Success THEN
+            Parm1 := Parm1;
+        END_IF*)
+    END_IF
+    
+    (*
+        mVFY        : DWORD := 16#00000000; 
+        mBEFORE        : DWORD := 16#10000000; Parm1.bBefore
+        mAFTER        : DWORD := 16#20000000; Parm1.bAfter
+        mAT            : DWORD := 16#30000000; Parm1.bBefore & bAfter
+        mBFRNG        : DWORD := 16#50000000; Parm1.bBefore & bRange
+        mAFTRNG        : DWORD := 16#60000000; Parm1.bAfter & bRange
+        mATRNG        : DWORD := 16#70000000; Parm1.bBefore & bAfter & bRange *)
+    
+    (* get next assert *)
+    IF assert < _tl_assertsPerTest THEN
+        assert := assert + 1);
+    ELSE
+        (* Exception!!! *)
+        RetVal := -3;
+    END_IF
+
+    // ELSE -- copy byte
+    
+    ptrByte2 := ADR(printString);
+    WHILE ptrByte2^ <> 0 DO
+        ptrByte1^ := ptrByte2^;
+        ptrByte1 := ptrByte1 + 1;
+        ptrByte2 := ptrByte2 + 1;
+    END_WHILE
+
+    // ELSE -- logprint
+    
+    (* --- input parameters --- *)
+    (* Value: True = Pass Message, False = Fail message *)
+    (* --- output values --- *)
+    (* NONE *)
+    (* Update external pointer *)
+    testlogP := ADR (testLog);
+    
+    (* copy name *)
+    ptrByte1 := ADR(testLog[testLogLine]);
+    
+    copyByte(printString := testCaseMem[tCase].Name);
+    copyByte(printString := SEL (Value, ': FAIL,', ': PASS,'));
+    copyByte(printString := USINT_TO_STRING(testCaseMem[tCase].TestCounter));
+    
+    IF NOT Value THEN
+        copyByte(printString := ' - ');
+        copyByte(printString := USINT_TO_STRING(testCaseMem[tCase].TestStep));
+    END_IF
+    
+    IF testLogLine < _tl_testMessages THEN
+        testLogLine := testLogLine + 1;
+    END_IF*)
+    
 END_FUNCTION_BLOCK
