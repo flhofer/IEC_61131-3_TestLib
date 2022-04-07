@@ -9,8 +9,8 @@ CONST
     _tl_assertsPerTest  := 3;
     _tl_testCases       := 9;
     _tl_testMessages    := 63;
-    _delayScale         := 1;    (* example 1 for ms, 1000 for sec, or simply multiplier of cycles *)
-    _delayIsTime        := FALSE; (* Execution time delay or execution counter delay selection *)
+    _tl_delayScale      := 1;    (* example 1 for ms, 1000 for sec, or simply multiplier of cycles *)
+    _tl_delayIsTime     := FALSE; (* Execution time delay or execution counter delay selection *)
 
 
     (* ------------- STATE MACHINE ------------- *)
@@ -89,21 +89,19 @@ CONST
 END_CONST
 
 VAR_INPUT
+    E     : BOOL := FALSE;
     (* Generic Parameters for calls *)
     (* description can be found in each action/pou *)
     Value : BOOL;
     Parm1 : DWORD;
     Parm2 : DWORD;
     (* these parameters may be reused as variables inside the code, BEWARE *)
-    (* Used for copyByte *)
-    printString : STRING[10];                    (* Print string, string we are using as dummy string for the copying process *)
 END_VAR
 VAR_OUTPUT
     RetVal: DINT;
 END_VAR
 
 VAR    
-    
     tCase       : INT := 16#0;                // number actual test CASE, used NOW *)
     assert      : INT := 16#0;                // number actual assertion OF test CASE, used sequentially, *NOW* *)
     testLogLine : INT := 16#0;                // actual line, write TO, in testlog
@@ -121,16 +119,18 @@ VAR
             AssertStats  : ARRAY [0.._tl_assertsPerTest] OF _tl_assertStats; // assert memory         
         END_STRUCT; 
     testLog     : ARRAY[1.._tl_testMessages] OF STRING[25];    (* Test execution log, general, for all test cases *)
-//    ptrByte1    : POINTER TO BYTE;
- //   ptrByte2    : POINTER TO BYTE;
     FieldCounter: BYTE := 1;
     after : BOOL;
     before: BOOL;
 
     SysMemSet1 : SysMemSet;
+    _delayIsTime : BOOL := _tl_delayIsTime; 
+    _delayScale  : INT := _tl_delayScale; 
 END_VAR
 
 BEGIN
+    IF E THEN
+
     (* State Machine for test cases*)
     (* --- input parameters --- *)
     (* Parm1 = No of total tests *)
@@ -158,7 +158,7 @@ BEGIN
                     testCaseMem[tCase].State := INT_TO_BYTE(BYTE_TO_INT(testCaseMem[tCase].State) + 16#10);
                     RetVal := BYTE_TO_INT(testCaseMem[tCase].State AND 16#F0);
     
-        sTC_START :    RetVal := sTC_RUN;
+        sTC_START : RetVal := sTC_RUN;
                     testCaseMem[tCase].State := INT_TO_BYTE(BYTE_TO_INT(testCaseMem[tCase].State) + 16#10) AND 16#F0;
     
         sTC_RUN :    CASE BYTE_TO_INT(testCaseMem[tCase].State AND 16#F) OF
@@ -172,7 +172,7 @@ BEGIN
                                     testCaseMem[tCase].StartTime := TIME_TCK();
                                     testCaseMem[tCase].ExecCounter := 1;
                                     RetVal := sT_INIT;
-    
+  
                         (* Test Startup *)
                         sT_INIT :    testCaseMem[tCase].ExecCounter := testCaseMem[tCase].ExecCounter + 1;
                                     IF _delayIsTime AND DWORD_TO_DINT(testCaseMem[tCase].EndTime) <= TIME_TO_DINT(TIME_TCK())
@@ -263,13 +263,26 @@ BEGIN
                                     END_IF;
     
                         (* Test Results *)
-                        sT_PASS    :   logPrint( Value := TRUE );
+                        sT_PASS    :   
+                                    testLog[testLogLine] := CONCAT( IN1:= testCaseMem[tCase].TestName, IN2:= ': PASS,', IN3:= INT_TO_STRING(testCaseMem[tCase].TestCounter));
+    
+                                    IF testLogLine < _tl_testMessages THEN
+                                        testLogLine := testLogLine + 1;
+                                    END_IF;
+
                                     testCaseMem[tCase].Result := INT_TO_BYTE(MAX ( IN1:= BYTE_TO_INT(testCaseMem[tCase].Result), IN2:= sT_PASS));
                                     testCaseMem[tCase].State := INT_TO_BYTE(BYTE_TO_INT(testCaseMem[tCase].State) - 3);
                                     RetVal := sT_STOP;
     
                         sT_FAIL,
-                        sT_ERROR :    logPrint( Value := FALSE );
+                        sT_ERROR :  
+                                    testLog[testLogLine] := CONCAT( IN1:= testCaseMem[tCase].TestName, IN2:= ': FAIL,', IN3:= INT_TO_STRING(testCaseMem[tCase].TestCounter),
+                                            IN4 := ' - ', IN5 := INT_TO_STRING(testCaseMem[tCase].TestStep));
+    
+                                    IF testLogLine < _tl_testMessages THEN
+                                        testLogLine := testLogLine + 1;
+                                    END_IF;
+                        
                                     testCaseMem[tCase].Result := INT_TO_BYTE(MAX ( IN1:= BYTE_TO_INT(testCaseMem[tCase].Result), IN2 := BYTE_TO_INT(testCaseMem[tCase].State AND 16#F)));
                                     testCaseMem[tCase].State := INT_TO_BYTE(BYTE_TO_INT(testCaseMem[tCase].State AND 16#F0) + sT_ABORT);
                                     RetVal := sT_ABORT;
@@ -295,7 +308,7 @@ BEGIN
                                         END_IF;
                                     ELSE
                                         RetVal := sT_DEINIT;
-                                    END_IF;
+                                    END_IF; 
                     END_CASE;
     
         (* Test Case Shutdown *)
@@ -322,21 +335,23 @@ BEGIN
     "_tl_global"._tlt := INT_TO_BYTE(testCaseMem[tCase].TestCounter);
     "_tl_global"._tlp := INT_TO_BYTE(testCaseMem[tCase].TestStep);
     
-    // ELSE -- assertThat
+    ELSE // -- assertThat
     
- (*       (* --- input parameters --- *)
+    (* --- input parameters --- *)
     (* Parm1 is the checking mode *)
     (* Parm2 = Delay of check in Cycles or time *)
     (* --- output values --- *)
     (* RetVal: 1 = executed, negative=error information *)
     
     RetVal := 1;
-    
-    before := (_delayIsTime AND TIME_TO_UDINT(TIME() - testCaseMem[tCase].StartTime) <= Parm2 + (Parm1 AND 16#FFFFFF) * _delayScale * BOOL_TO_UDINT(Parm1.bRange))
+
+    before := ((Parm1 AND SHL( IN :=DW#16#1, N:=bRange) ));
+(*    
+    before := (_delayIsTime AND TIME_TO_DINT(TIME_TCK() - testCaseMem[tCase].StartTime) <= Parm2 + (Parm1 AND 16#FFFFFF) * _delayScale * BOOL_TO_DINT(Parm1 AND SHR( IN :=DW#16#1, N:=bRange)))
                 OR (NOT _delayIsTime AND testCaseMem[tCase].ExecCounter <= Parm2 + (Parm1 AND 16#FFFFFF) * _delayScale * BOOL_TO_UDINT(Parm1.bRange));
     
-    after := (_delayIsTime AND TIME_TO_UDINT(TIME() - testCaseMem[tCase].StartTime) >= Parm2 - (Parm1 AND 16#FFFFFF) * _delayScale * BOOL_TO_UDINT(Parm1.bRange))
-                OR (NOT _delayIsTime AND testCaseMem[tCase].ExecCounter >= Parm2 - (Parm1 AND 16#FFFFFF) * _delayScale * BOOL_TO_UDINT(Parm1.bRange));
+    after := (_delayIsTime AND TIME_TO_DINT(TIME_TCK() - testCaseMem[tCase].StartTime) >= Parm2 - (Parm1 AND 16#FFFFFF) * _delayScale * BOOL_TO_DINT(Parm1.bRange))
+                OR (NOT _delayIsTime AND testCaseMem[tCase].ExecCounter >= Parm2 - (Parm1 AND 16#FFFFFF) * _delayScale * BOOL_TO_DINT(Parm1.bRange));
     
     
     IF  Parm1.bAfter AND after AND (NOT before OR (Parm1.bRange AND testCaseMem[tCase].AssertStats[assert].Done)) OR
@@ -399,30 +414,7 @@ BEGIN
         ptrByte1 := ptrByte1 + 1;
         ptrByte2 := ptrByte2 + 1;
     END_WHILE
-
-    // ELSE -- logprint
     
-    (* --- input parameters --- *)
-    (* Value: True = Pass Message, False = Fail message *)
-    (* --- output values --- *)
-    (* NONE *)
-    (* Update external pointer *)
-    testlogP := ADR (testLog);
-    
-    (* copy name *)
-    ptrByte1 := ADR(testLog[testLogLine]);
-    
-    copyByte(printString := testCaseMem[tCase].Name);
-    copyByte(printString := SEL (Value, ': FAIL,', ': PASS,'));
-    copyByte(printString := USINT_TO_STRING(testCaseMem[tCase].TestCounter));
-    
-    IF NOT Value THEN
-        copyByte(printString := ' - ');
-        copyByte(printString := USINT_TO_STRING(testCaseMem[tCase].TestStep));
-    END_IF
-    
-    IF testLogLine < _tl_testMessages THEN
-        testLogLine := testLogLine + 1;
-    END_IF*)
-    
+    E:= FALSE;*)
+    END_IF;    
 END_FUNCTION_BLOCK
