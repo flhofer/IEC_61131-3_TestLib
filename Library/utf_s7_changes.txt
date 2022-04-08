@@ -1,0 +1,18 @@
+Test library changes required to run on legacy S7 systems
+
+
+TestCase
+-----
+
+* No pointers, changed all arrays and relative pointers to entry id's
+* No global constants. Size constants are now part of TestCase, and must be instantiated in some cases to permit IF comparison
+* Bit access through constants. requires mapping to an instance DB
+* SysMemSet needs FB as pointers must be in I/O only and allocated somewhere, i.e., instance DB i/O or global DB only. This is a limitation of SCL
+* Functions can not pass parameters to functions. You need to pass them to a temp variable first
+* The main program must be implemented as FB instantiated in a DB instantiation, or a function accessing a global DB. However, becayse sysmemset is a FB, it can not be run from inside a function
+
+Global Constants
+--------------
+Older versions (Simatic Manager) do not support global constants. The constants must thus be redefined for every test-case FB, or the programm migrated to TIA (which supports global user constants)
+
+
