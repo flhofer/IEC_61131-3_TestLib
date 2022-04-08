@@ -6,13 +6,6 @@ VERSION : '1.0'
 AUTHOR : 'FlorianH'
 
 CONST
-    _tl_assertsPerTest  := 3;
-    _tl_testCases       := 9; // -> redefined in init!
-    _tl_testMessages    := 63;
-    _tl_delayScale      := 1;    (* example 1 for ms, 1000 for sec, or simply multiplier of cycles *)
-    _tl_delayIsTime     := FALSE; (* Execution time delay or execution counter delay selection *)
-
-
     (* ------------- STATE MACHINE ------------- *)
     (* States for the state machines, Test case and test *)
     sTC_ND         :=16#00;
@@ -51,41 +44,6 @@ CONST
     sTC_PASS     :=16#C0;
     sTC_FAIL     :=16#D0;
     sTC_ERROR     :=16#E0;
-
-    (* Parameters for settings of test cases *)
-    pTESTS         := 0;    (* sets the number of tests in this test case/suite, default = 1 *)
-    pSTEPS         := 1;    (* sets the number of steps in this test, default = 1 *)
-    pWTIME         := 2;    (* sets the waiting time fot the startup *)
-    pSTIME         := 3;    (* sets the step time, timeout value for this step, default last TestCases.assert *)
-    pREADY         := 4;    (* preps ready, 0 = false, 1 = true, default = true *)
-    pGETN         := 5;     (* get continuous array number based on sizes of generated arrays *)
-
-    (* Parameters for GenArray, setting of mode *)
-    tRndReal     := 1;
-    tRndDint     := 2;
-    tLinReal     := 3;
-    tLinDint     := 4;
-    tTupReal     := 5;
-    tTupDint     := 6;
-
-    (* Parameters for asserts, setting of verification type *)
-    mEQ             := 16#0000000;
-    mLT             := 16#1000000;
-    mGT             := 16#2000000;
-    mLEQ         := 16#3000000;
-    mGEQ         := 16#4000000;
-    mBTW         := 16#5000000; (* not implemented yet *)
-    mVFY         := 16#00000000;
-    mBEFORE         := 16#10000000;
-    mAFTER         := 16#20000000;
-    mAT             := 16#30000000;
-    mBFRNG         := 16#50000000;
-    mAFTRNG         := 16#60000000;
-    mATRNG         := 16#70000000;
-    (* bits for mode masks 
-    bBefore        := 28;
-    bAfter         := 29;
-    bRange         := 30;*)
 END_CONST
 
 VAR_INPUT
@@ -97,6 +55,7 @@ VAR_INPUT
     Parm2 : DWORD;
     Parm1b AT Parm1 : STRUCT
             Number: ARRAY [0..27] OF BOOL;
+            (* Warn! these are the bits controlling ranges *) 
             bBefore : BOOL;
             bAfter : BOOL;
             bRange : BOOL;
@@ -115,13 +74,9 @@ END_VAR
 VAR_TEMP
     after : BOOL;
     before: BOOL;
-    _delayIsTime : BOOL; 
-    _delayScale  : DINT; 
 END_VAR
 
 BEGIN
-    _delayIsTime := _tl_delayIsTime; 
-    
     IF E THEN
 
     (* State Machine for test cases*)
@@ -132,7 +87,9 @@ BEGIN
     
     (* Reset asserts pointer to the first *)
     TestCases.assert := 0;
-    
+    (* Reset field counter for field assignments *)
+    TestCases.FieldCounter := 1;
+
     (* NOTE that the code MAXMoutside gets the new state first! this to be able to react and avoid transitions *)
     
     (* Call, next step in a row *) 
@@ -166,13 +123,13 @@ BEGIN
   
                         (* Test Startup *)
                         sT_INIT :    TestCases.testCaseMem[TestCases.tCase].ExecCounter := TestCases.testCaseMem[TestCases.tCase].ExecCounter + 1;
-                                    IF _delayIsTime AND DWORD_TO_DINT(TestCases.testCaseMem[TestCases.tCase].EndTime) <= TIME_TO_DINT(TIME_TCK())
-                                       OR NOT _delayIsTime AND DWORD_TO_DINT(TestCases.testCaseMem[TestCases.tCase].EndTime) < TestCases.testCaseMem[TestCases.tCase].ExecCounter THEN
+                                    IF _tl_const._delayIsTime AND TestCases.testCaseMem[TestCases.tCase].EndTime <= TIME_TO_DINT(TIME_TCK())
+                                       OR NOT _tl_const._delayIsTime AND TestCases.testCaseMem[TestCases.tCase].EndTime < TestCases.testCaseMem[TestCases.tCase].ExecCounter THEN
     
                                         (* Set testcounter to the next one *)
                                         TestCases.testCaseMem[TestCases.tCase].State := INT_TO_BYTE(BYTE_TO_INT(TestCases.testCaseMem[TestCases.tCase].State) + 1);
                                         (* Clean TestCases.assert memory *)
-                                        SysMemSet1( pDest := TestCases.testCaseMem[TestCases.tCase].AssertStats, bCharacter :=  0, iCount := _tl_assertsPerTest);
+                                        SysMemSet1( pDest := TestCases.testCaseMem[TestCases.tCase].AssertStats, bCharacter :=  0, iCount := _tl_const._assertsPerTest);
     
                                         (* Store Test timing information *)
                                         TestCases.testCaseMem[TestCases.tCase].StartTime := TIME_TCK();
@@ -189,8 +146,8 @@ BEGIN
                         sT_WAIT    :    (* Wait for x time or ececutions *)
                                     RetVal := sT_WAIT;
                                     TestCases.testCaseMem[TestCases.tCase].ExecCounter := TestCases.testCaseMem[TestCases.tCase].ExecCounter + 1;
-                                    IF _delayIsTime AND DWORD_TO_DINT(TestCases.testCaseMem[TestCases.tCase].EndTime) <= TIME_TO_DINT(TIME_TCK())
-                                       OR NOT _delayIsTime AND DWORD_TO_DINT(TestCases.testCaseMem[TestCases.tCase].EndTime) < TestCases.testCaseMem[TestCases.tCase].ExecCounter THEN
+                                    IF _tl_const._delayIsTime AND TestCases.testCaseMem[TestCases.tCase].EndTime <= TIME_TO_DINT(TIME_TCK())
+                                       OR NOT _tl_const._delayIsTime AND TestCases.testCaseMem[TestCases.tCase].EndTime < TestCases.testCaseMem[TestCases.tCase].ExecCounter THEN
                                         (* Example wait for time *)
                                         TestCases.testCaseMem[TestCases.tCase].State := INT_TO_BYTE(BYTE_TO_INT(TestCases.testCaseMem[TestCases.tCase].State) + 1);
                                         TestCases.testCaseMem[TestCases.tCase].EndTime := 0;
@@ -214,7 +171,7 @@ BEGIN
                                         RetVal := RetVal - BOOL_TO_DINT(NOT TestCases.testCaseMem[TestCases.tCase].AssertStats[TestCases.assert].Done);
                                         Value := Value AND TestCases.testCaseMem[TestCases.tCase].AssertStats[TestCases.assert].Success;
                                         TestCases.assert := TestCases.assert + 1;
-                                    UNTIL TestCases.assert > _tl_assertsPerTest OR NOT TestCases.testCaseMem[TestCases.tCase].AssertStats[TestCases.assert].Trig
+                                    UNTIL TestCases.assert > _tl_const._assertsPerTest OR NOT TestCases.testCaseMem[TestCases.tCase].AssertStats[TestCases.assert].Trig
                                     END_REPEAT;
                                     TestCases.assert := 0;
     
@@ -222,8 +179,8 @@ BEGIN
                                     TestCases.testCaseMem[TestCases.tCase].ExecCounter := TestCases.testCaseMem[TestCases.tCase].ExecCounter + 1;
     
                                     IF RetVal = 0 AND                                    (* All asserts done *)
-                                        (_delayIsTime AND DWORD_TO_DINT(TestCases.testCaseMem[TestCases.tCase].EndTime) <= TIME_TO_DINT(TIME_TCK())
-                                        OR NOT _delayIsTime AND DWORD_TO_DINT(TestCases.testCaseMem[TestCases.tCase].EndTime) < TestCases.testCaseMem[TestCases.tCase].ExecCounter) THEN
+                                        (_tl_const._delayIsTime AND TestCases.testCaseMem[TestCases.tCase].EndTime <= TIME_TO_DINT(TIME_TCK())
+                                        OR NOT _tl_const._delayIsTime AND TestCases.testCaseMem[TestCases.tCase].EndTime < TestCases.testCaseMem[TestCases.tCase].ExecCounter) THEN
                                         (* reset endtime, 0= as asserts are done *)
                                         TestCases.testCaseMem[TestCases.tCase].EndTime := 0;
     
@@ -235,7 +192,7 @@ BEGIN
                                                 RetVal := sT_PASS;
                                             ELSE
                                                 (* Clean TestCases.assert memory *)
-                                                SysMemSet1( pDest := TestCases.testCaseMem[TestCases.tCase].AssertStats, bCharacter := 0, iCount:= _tl_assertsPerTest );
+                                                SysMemSet1( pDest := TestCases.testCaseMem[TestCases.tCase].AssertStats, bCharacter := 0, iCount:= _tl_const._assertsPerTest );
                                                 
                                                 (* Store Test starting time *)
                                                 TestCases.testCaseMem[TestCases.tCase].StartTime := TIME_TCK();
@@ -257,7 +214,7 @@ BEGIN
                         sT_PASS    :   
                                     TestCases.testLog[TestCases.testLogLine] := CONCAT( IN1:= TestCases.testCaseMem[TestCases.tCase].TestName, IN2:= ': PASS,', IN3:= INT_TO_STRING(TestCases.testCaseMem[TestCases.tCase].TestCounter));
     
-                                    IF TestCases.testLogLine < _tl_testMessages THEN
+                                    IF TestCases.testLogLine < _tl_const._testMessages THEN
                                         TestCases.testLogLine := TestCases.testLogLine + 1;
                                     END_IF;
 
@@ -270,7 +227,7 @@ BEGIN
                                     TestCases.testLog[TestCases.testLogLine] := CONCAT( IN1:= TestCases.testCaseMem[TestCases.tCase].TestName, IN2:= ': FAIL,', IN3:= INT_TO_STRING(TestCases.testCaseMem[TestCases.tCase].TestCounter),
                                             IN4 := ' - ', IN5 := INT_TO_STRING(TestCases.testCaseMem[TestCases.tCase].TestStep));
     
-                                    IF TestCases.testLogLine < _tl_testMessages THEN
+                                    IF TestCases.testLogLine < _tl_const._testMessages THEN
                                         TestCases.testLogLine := TestCases.testLogLine + 1;
                                     END_IF;
                         
@@ -284,8 +241,8 @@ BEGIN
                         sT_END :    TestCases.testCaseMem[TestCases.tCase].State := INT_TO_BYTE(BYTE_TO_INT(TestCases.testCaseMem[TestCases.tCase].State) + 1);
                                     RetVal := BYTE_TO_INT(TestCases.testCaseMem[TestCases.tCase].State AND 16#F);
     
-                        sT_DEINIT : IF _delayIsTime AND DWORD_TO_DINT(TestCases.testCaseMem[TestCases.tCase].EndTime) <= TIME_TO_DINT(TIME_TCK())
-                                       OR NOT _delayIsTime AND DWORD_TO_DINT(TestCases.testCaseMem[TestCases.tCase].EndTime) <= TestCases.testCaseMem[TestCases.tCase].ExecCounter THEN
+                        sT_DEINIT : IF _tl_const._delayIsTime AND TestCases.testCaseMem[TestCases.tCase].EndTime <= TIME_TO_DINT(TIME_TCK())
+                                       OR NOT _tl_const._delayIsTime AND TestCases.testCaseMem[TestCases.tCase].EndTime <= TestCases.testCaseMem[TestCases.tCase].ExecCounter THEN
     
                                         IF TestCases.testCaseMem[TestCases.tCase].TestCounter < TestCases.testCaseMem[TestCases.tCase].TestCount THEN
                                             TestCases.testCaseMem[TestCases.tCase].TestCounter := TestCases.testCaseMem[TestCases.tCase].TestCounter + 1;
@@ -335,13 +292,13 @@ BEGIN
     (* RetVal: 1 = executed, negative=error information *)
     
     RetVal := 1;
-    _delayScale := _tl_delayScale; 
+    _tl_const._delayScale := _tl_const._delayScale; 
 
-    before := (_delayIsTime AND (TIME_TO_DINT(TIME_TCK() - TestCases.testCaseMem[TestCases.tCase].StartTime) <= DWORD_TO_DINT(Parm2) + DWORD_TO_DINT(Parm1 AND 16#FFFFFF) * _delayScale * BOOL_TO_DINT(Parm1b.bRange)))
-                OR (NOT _delayIsTime AND (TestCases.testCaseMem[TestCases.tCase].ExecCounter <= DWORD_TO_DINT(Parm2) + DWORD_TO_DINT(Parm1 AND 16#FFFFFF) * _delayScale * BOOL_TO_DINT(Parm1b.bRange)));
+    before := (_tl_const._delayIsTime AND (TIME_TO_DINT(TIME_TCK() - TestCases.testCaseMem[TestCases.tCase].StartTime) <= DWORD_TO_DINT(Parm2) + DWORD_TO_DINT(Parm1 AND 16#FFFFFF) * _tl_const._delayScale * BOOL_TO_DINT(Parm1b.bRange)))
+                OR (NOT _tl_const._delayIsTime AND (TestCases.testCaseMem[TestCases.tCase].ExecCounter <= DWORD_TO_DINT(Parm2) + DWORD_TO_DINT(Parm1 AND 16#FFFFFF) * _tl_const._delayScale * BOOL_TO_DINT(Parm1b.bRange)));
     
-    after := (_delayIsTime AND (TIME_TO_DINT(TIME_TCK() - TestCases.testCaseMem[TestCases.tCase].StartTime) >= DWORD_TO_DINT(Parm2) - DWORD_TO_DINT(Parm1 AND 16#FFFFFF) * _delayScale * BOOL_TO_DINT(Parm1b.bRange)))
-                OR (NOT _delayIsTime AND (TestCases.testCaseMem[TestCases.tCase].ExecCounter >= DWORD_TO_DINT(Parm2) - DWORD_TO_DINT(Parm1 AND 16#FFFFFF) * _delayScale * BOOL_TO_DINT(Parm1b.bRange)));
+    after := (_tl_const._delayIsTime AND (TIME_TO_DINT(TIME_TCK() - TestCases.testCaseMem[TestCases.tCase].StartTime) >= DWORD_TO_DINT(Parm2) - DWORD_TO_DINT(Parm1 AND 16#FFFFFF) * _tl_const._delayScale * BOOL_TO_DINT(Parm1b.bRange)))
+                OR (NOT _tl_const._delayIsTime AND (TestCases.testCaseMem[TestCases.tCase].ExecCounter >= DWORD_TO_DINT(Parm2) - DWORD_TO_DINT(Parm1 AND 16#FFFFFF) * _tl_const._delayScale * BOOL_TO_DINT(Parm1b.bRange)));
     
     
     IF  Parm1b.bAfter AND after AND (NOT before OR (Parm1b.bRange AND TestCases.testCaseMem[TestCases.tCase].AssertStats[TestCases.assert].Done)) OR
@@ -363,7 +320,7 @@ BEGIN
     END_IF;
         
     (* get next TestCases.assert *)
-    IF TestCases.assert < _tl_assertsPerTest THEN
+    IF TestCases.assert < _tl_const._assertsPerTest THEN
         TestCases.assert := TestCases.assert + 1;
     ELSE
         (* Exception!!! *)
@@ -375,6 +332,11 @@ BEGIN
 END_FUNCTION_BLOCK
 
 FUNCTION testInit : DINT
+TITLE = 'APTest TestCase init'
+NAME : 'TestInit'
+FAMILY : 'APTest'
+VERSION : '1.0'
+AUTHOR : 'FlorianH'
 
 (* Created by FlorianH 05.08.2016, Modified by FlorianH 25.05.2017 *)
 (* finds the acual test case by name and updates the pointers, finally calls the state machine *)
@@ -383,11 +345,7 @@ VAR_INPUT
     Count: INT; (* Amount of tests, if 0 or wrong it can be set with testParam afterwards *)
 END_VAR
 
-CONST
-    _tl_testCases       := 9; // -> redefined in init!
-END_CONST
-
-VAR
+VAR_TEMP
     tName : STRING [10];
 END_VAR
 
@@ -403,15 +361,15 @@ REPEAT
         TestCases.testCaseMem[TestCases.tCase].TestName := TestName;
 
         (* init and return test counter *)
-        TestCase.TestCase1(Parm1 := INT_TO_DWORD(Count));
+        TestCase.TestCase1(E:= FALSE, Parm1 := INT_TO_DWORD(Count));
         testInit := TestCase1.RetVal;
         RETURN;
         
     ELSE
         tName := TestName;
-        IF EQ_STRNG( S1 := TestCases.testCaseMem[TestCases.tCase].TestName, S2 :=  tName) = 1 THEN 
+        IF TestCases.testCaseMem[TestCases.tCase].TestName =  tName THEN 
             (* Matching testCase found, run state-machine check *)
-            TestCase.TestCase1(Parm1 := INT_TO_DWORD(Count));
+            TestCase.TestCase1(E:= FALSE, Parm1 := INT_TO_DWORD(Count));
             testInit := TestCase1.RetVal;
             RETURN;
         END_IF;
@@ -419,9 +377,78 @@ REPEAT
 
     (* Goto next, not in this position *)
     TestCases.tCase := TestCases.tCase + 1;
-    UNTIL TestCases.tCase > _tl_testCases
+    UNTIL TestCases.tCase > _tl_const._testCases
 END_REPEAT;
 
 (* No empty spot or match found, return error *)
 testInit := -10;
 END_FUNCTION
+
+FUNCTION testParam :DINT
+(* Created by FlorianH 25.05.2017, Modified by FlorianH 05.07.2018 *)
+(* Sets a specific parameter for the testing framework *)
+TITLE = 'APTest TestCase parameter change'
+NAME : 'TestParm'
+FAMILY : 'APTest'
+VERSION : '1.0'
+AUTHOR : 'FlorianH'
+
+VAR_INPUT
+    Param: BYTE;
+    Value: DINT;
+END_VAR
+
+VAR_TEMP
+    lCount : INT;
+    tState : BYTE;
+END_VAR
+
+BEGIN
+(* Todo Better Checks for assertion memory positions *)
+IF TestCases.tCase > 0 THEN
+    (* Delay from secs to milisecs *)
+    IF Param = _tl_const.pTESTS THEN // Limited to 255 for compat
+        TestCases.testCaseMem[TestCases.tCase].TestCount := DINT_TO_INT(LIMIT ( MN:= 1, IN := Value, MX := 255));
+    ELSIF Param = _tl_const.pSTEPS THEN // Limited to 255 for compat
+        TestCases.testCaseMem[TestCases.tCase].TestSteps := DINT_TO_INT(LIMIT (MN:= 1, IN := Value, MX := 255));
+    ELSIF Param = _tl_const.pSTIME THEN
+        IF (TestCases.testCaseMem[TestCases.tCase].State AND 16#F) = _tl_const.sT_RUN THEN
+            (* sets the timeout or mimum execution time for a step *)
+            TestCases.testCaseMem[TestCases.tCase].EndTime := Value;
+        ELSE
+            testParam := -2;
+        END_IF;
+
+    ELSIF Param = _tl_const.pWTIME THEN
+        IF (TestCases.testCaseMem[TestCases.tCase].State AND 16#F) = _tl_const.sT_INIT THEN
+            (* Sets end time to a future moment so to make the execution wait *)
+            IF _tl_const._delayIsTime THEN
+                TestCases.testCaseMem[TestCases.tCase].EndTime := TIME_TO_DINT(TestCases.testCaseMem[TestCases.tCase].StartTime) + Value;
+            ELSE
+               TestCases.testCaseMem[TestCases.tCase].EndTime := Value;
+            END_IF;
+         ELSE
+            testParam := -2;
+         END_IF;
+    ELSIF Param = _tl_const.pREADY THEN
+        tState := TestCases.testCaseMem[TestCases.tCase].State AND 16#F;
+        IF tState = _tl_const.sT_INIT
+            OR tState = _tl_const.sT_DEINIT
+            OR tState = _tl_const.sTC_INIT
+            OR tState = _tl_const.sTC_DEINIT THEN
+
+            TestCases.testCaseMem[TestCases.tCase].EndTime := BOOL_TO_DINT(NOT DINT_TO_BOOL(LIMIT( MN := 0, IN := Value, MX := 1)));
+         ELSE
+            testParam := -2;
+         END_IF;
+    ELSIF Param = _tl_const.pGETN  THEN   
+        lCount := (TestCases.testCaseMem[TestCases.tCase].TestCount-1) / MAX( IN1 := TestCases.FieldCounter, IN2 := 1);
+        TestCases.FieldCounter := TestCases.FieldCounter * DINT_TO_INT(Value);
+        testParam := lCount MOD DINT_TO_INT(Value) + 1;
+    END_IF;
+    RETURN;
+END_IF;
+(* Exception *)
+testParam := -1;
+END_FUNCTION
+

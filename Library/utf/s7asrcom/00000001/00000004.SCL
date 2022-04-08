@@ -95,6 +95,12 @@ STRUCT
     bBefore       : INT := 28;
     bAfter        : INT := 29;
     bRange        : INT := 30;
+    
+    _assertsPerTest : INT := 3;
+    _testCases      : INT := 9; 
+    _testMessages   : INT := 63;
+    _delayScale     : INT := 1;        (* example 1 for ms, 1000 for sec, or simply multiplier of cycles *)
+    _delayIsTime    : BOOL := FALSE;   (* Execution time delay or execution counter delay selection *)
 END_STRUCT
 
 BEGIN

@@ -8,7 +8,7 @@ TestCase
 * No global constants. Size constants are now part of TestCase, and must be instantiated in some cases to permit IF comparison
 * Bit access through constants. requires mapping to an instance DB
 * SysMemSet needs FB as pointers must be in I/O only and allocated somewhere, i.e., instance DB i/O or global DB only. This is a limitation of SCL
-* Functions can not pass parameters to functions. You need to pass them to a temp variable first
+* Functions can not pass parameters beyond base types to functions. You need to pass them to a temp variable first
 * The main program must be implemented as FB instantiated in a DB instantiation, or a function accessing a global DB. However, becayse sysmemset is a FB, it can not be run from inside a function
 
 Global Constants

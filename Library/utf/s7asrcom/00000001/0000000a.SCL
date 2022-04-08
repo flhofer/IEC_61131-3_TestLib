@@ -1,0 +1,107 @@
+FUNCTION assertTrue : DINT
+(* Created by FlorianH 05.08.2016, Modified by FlorianH 26.06.2017 *)
+(* genuine base case of the assertion, calls then the main evaluation part *)
+TITLE = 'APTest TestCase assert function (AssertTrue)'
+NAME : 'aTrue'
+FAMILY : 'APTest'
+VERSION : '1.0'
+AUTHOR : 'FlorianH'
+
+VAR_INPUT
+    Value : BOOL;
+    Mode  : DWORD;
+    Delay : DWORD;
+END_VAR
+
+BEGIN
+(* Todo Better Checks for assertion memory positions *)
+IF TestCases.tCase > 0 AND TestCases.assert > 0 THEN
+    (* Delay from secs to milisecs *)
+    TestCase.TestCase1 (E := TRUE, Value := Value, Parm1 := Mode, Parm2 := DINT_TO_DWORD(DWORD_TO_DINT(Delay) * _tl_const._delayScale));
+    assertTrue := TestCase1.RetVal;
+    RETURN;
+END_IF;
+(* Exception *)
+assertTrue := -1;
+END_FUNCTION
+
+FUNCTION assertFalse : DINT
+(* Created by FlorianH 05.08.2016, Modified by FlorianH 26.06.2017 *)
+TITLE = 'APTest TestCase assert function (AssertFalse)'
+NAME : 'aFalse'
+FAMILY : 'APTest'
+VERSION : '1.0'
+AUTHOR : 'FlorianH'
+
+VAR_INPUT
+    Value : BOOL;
+    Mode  : DWORD;
+    Delay : DWORD;
+END_VAR
+
+(* assertion return value *)
+assertFalse := assertTrue (Value := NOT Value, Mode := Mode, Delay := Delay);
+END_FUNCTION
+
+FUNCTION assertEquals : DINT
+(* Created by FlorianH 22.09.2016, Modified by FlorianH 26.06.2017 *)
+(* compares two boolean values, using assertTrue *)
+TITLE = 'APTest TestCase assert function (AssertEquals)'
+NAME : 'aEQ'
+FAMILY : 'APTest'
+VERSION : '1.0'
+AUTHOR : 'FlorianH'
+
+VAR_INPUT
+    Value1    : BOOL;
+    Value2    : BOOL;
+    Mode    : DWORD;
+    Delay    : DWORD;
+END_VAR
+
+BEGIN
+
+assertEquals := assertTrue (Value := Value1 = Value2, Mode := Mode, Delay := Delay);
+
+END_FUNCTION
+
+FUNCTION assertEqualsD : DINT
+(* Created by FlorianH 22.09.2016, Modified by FlorianH 28.06.2017 *)
+(* compares two numeric values, non float, using assertTrue *)
+TITLE = 'APTest TestCase assert function (AssertEqualsD)'
+NAME : 'aEQd'
+FAMILY : 'APTest'
+VERSION : '1.0'
+AUTHOR : 'FlorianH'
+
+VAR_INPUT
+    Value1    : DINT;
+    Value2    : DINT;
+    Mode    : DWORD;
+    Delay    : DWORD;
+END_VAR
+
+VAR
+    Md     : DWORD;
+    res    : BOOL;
+END_VAR
+
+BEGIN
+
+Md := Mode AND 16#F000000;
+IF Md = _tl_const.mEQ THEN
+     res := Value1 = Value2;
+ELSIF Md = _tl_const.mLT THEN
+     res := Value1 < Value2;
+ELSIF Md = _tl_const.mGT THEN    
+     res := Value1 > Value2;
+ELSIF Md = _tl_const.mLEQ THEN
+     res := Value1 <= Value2;
+ELSIF Md = _tl_const.mGEQ THEN 
+    res := Value1 >= Value2;
+END_IF;
+
+assertEqualsD := assertTrue (Value := res, Mode := Mode AND 16#F0FFFFFF, Delay := Delay);
+
+END_FUNCTION
+        

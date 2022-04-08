@@ -1,6 +1,6 @@
 (*
 APTest SCL data structures and blocks Generation file 
-If you update sizes, please remember to update them in TestCases generator (constants) as well
+If you update sizes, please remember to update them in _tl_const constants as well
 *)
 
 TYPE _tl_assertStats 
@@ -23,12 +23,12 @@ FAMILY : 'APTest'
 VERSION : 1.0
 AUTHOR : 'FlorianH'
 STRUCT   (* Memory for test cases, limited by constant *)   
-    TestName     : STRING[10];        // Name of the test 
+    TestName     : STRING[10];       // Name of the test 
     ExecCounter  : INT := 0;         // 0 = no executions jet, > no OF exec      
-    StartTime    : TIME;              // TIME in ms OF the start OF the test, based on TIME()      
-    EndTime      : DWORD;             // sets a minimum TIME FOR the test step TO survive, also timeout 
-    State        : BYTE := 16#0;         // Test CASE AND test state      
-    Result       : BYTE := 16#0;         // Result, _tlState      
+    StartTime    : TIME;             // TIME in ms OF the start OF the test, based on TIME()      
+    EndTime      : DINT;             // sets a minimum TIME FOR the test step TO survive, also timeout 
+    State        : BYTE := 16#0;     // Test CASE AND test state      
+    Result       : BYTE := 16#0;     // Result, _tlState      
     TestCounter  : INT := 0;         // Test Number, in the test CASE     
     TestStep     : INT := 0;         // Actual test step      
     TestCount    : INT := 1;         // Total tests FOR this tc      
@@ -48,8 +48,9 @@ STRUCT
     tCase       : INT := 0;                // number actual test CASE, used NOW *)
     assert      : INT := 0;                // number actual assertion OF test CASE, used sequentially, *NOW* *)
     testLogLine : INT := 0;                // actual line, write TO, in testlog
-    testCaseMem: ARRAY [0..9] OF _tl_testCase;
-    testLog     : ARRAY[1..63] OF STRING[25];    (* Test execution log, general, for all test cases *)
+    FieldCounter: INT := 1;
+    testCaseMem : ARRAY[0..9] OF _tl_testCase;
+    testLog     : ARRAY[0..63] OF STRING[25];    (* Test execution log, general, for all test cases *)
 END_STRUCT
 
 BEGIN
