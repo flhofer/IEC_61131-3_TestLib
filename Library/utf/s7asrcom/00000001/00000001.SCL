@@ -405,7 +405,7 @@ END_VAR
 
 BEGIN
 (* Todo Better Checks for assertion memory positions *)
-IF TestCases.tCase > 0 THEN
+IF TestCases.tCase <= _tl_const._testCases THEN
     (* Delay from secs to milisecs *)
     IF Param = _tl_const.pTESTS THEN // Limited to 255 for compat
         TestCases.testCaseMem[TestCases.tCase].TestCount := DINT_TO_INT(LIMIT ( MN:= 1, IN := Value, MX := 255));
@@ -452,3 +452,45 @@ END_IF;
 testParam := -1;
 END_FUNCTION
 
+FUNCTION testTime : DINT
+(* Created by FlorianH 05.08.2016, Modified by FlorianH 26.06.2017 *)
+(* Returns the actual elapsed time/cycles since test start *)
+TITLE = 'APTest TestCase runtime'
+NAME : 'TestTime'
+FAMILY : 'APTest'
+VERSION : '1.0'
+AUTHOR : 'FlorianH'
+
+BEGIN
+IF TestCases.tCase <= _tl_const._testCases THEN
+    IF _tl_const._delayIsTime THEN
+        testTime := TIME_TO_DINT(TIME_TCK() - TestCases.testCaseMem[TestCases.tCase].StartTime);
+    ELSE
+        testTime := TestCases.testCaseMem[TestCases.tCase].ExecCounter;
+    END_IF;
+    RETURN;
+END_IF;
+testTime := 0;
+END_FUNCTION
+
+FUNCTION testTimeRange : BOOL
+(* Created by FlorianH 22.09.2016, Modified by FlorianH 22.09.2016 *)
+(* Returns true if the time span is in the range specified *)
+TITLE = 'APTest TestCase runtime range test'
+NAME : 'TestTimR'
+FAMILY : 'APTest'
+VERSION : '1.0'
+AUTHOR : 'FlorianH'
+
+VAR_INPUT
+    from : DINT;
+    toT  : DINT;
+END_VAR
+VAR
+    Diff : DINT;
+END_VAR
+
+BEGIN
+Diff := testTime();
+testTimeRange := Diff >= from AND Diff < toT;
+END_FUNCTION

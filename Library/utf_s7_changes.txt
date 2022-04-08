@@ -15,4 +15,12 @@ Global Constants
 --------------
 Older versions (Simatic Manager) do not support global constants. The constants must thus be redefined for every test-case FB, or the programm migrated to TIA (which supports global user constants)
 
+Features not supported yet
+--------------------------
+Due to the different techniques in handling pointers, the following are not implemented yet:
+
+* assertEqualsO : object comparisons, eg. structs, and connected memory functions (sysMemCmb)
+* testGenArray : automatic generation of test values (line, analog, boundary.. ) and connected randomizzation functions
+
+Futhermore, due to the limits with constants, the state machine constants have to be declared in every test, while others need the '_tl_const.' prefix. (implmented as globally initialized DB)
 
