@@ -16,6 +16,7 @@ class Test:
     instanceName = ''
     constants = {}
     variables = {}
+    generators = []
     
     # From workbook -> may be removed in future
     typeVar = {}
@@ -29,13 +30,38 @@ class Test:
     
     def _generateVars(self):
         """Generate -required- variable list to add to the test POU"""
-    
+
+        self.generators = []
+        # Collector for the parametrized test values
+        for s in self.steps:
+            ArrayVals = { 'Len' : 0, 'Name' : '', 'Value' : '', 'Test': 0}
+            wasGenArr = False
+            for t in self.typeVar[1]:
+                for v in self.steps[s]:
+                    if self.steps[s][v][1][t]['Type'].lower() == 'tuple':
+                        ArrayVals['Value'] = 'rTuple'
+                        wasGenArr = True
+                        ArrayVals['Name'] = self.typeVar[1][t]['Name']
+                        ArrayVals['Value'] += ', ' + self.steps[s][v][1][t]['Value']   
+                        ArrayVals['Test'] = s
+                        ArrayVals['Len']+=3
+                    elif str(self.steps[s][v][1][t]['Value']) != '' and self.steps[s][v][1][t]['Type'].lower() == '' and wasGenArr == True:
+                        ArrayVals['Value'] += ', ' + self.steps[s][v][1][t]['Value']
+                        ArrayVals['Len']+=2
+                    else:
+                        wasGenArr = False                    
+            
+            if ArrayVals['Len'] > 0:
+                self.generators.append(ArrayVals)
+
         self.variables = {0:{ 'Name': 'ptrVars', 'Type': 'POINTER TO ' + self.testName + '_vars'}}
         self.variables[1] = { 'Name': 'i', 'Type': 'INT', 'Value' : "1"}
         if self.fbName != '':
             self.variables[2] = { 'Name': self.instanceName,    'Type': self.fbName}
     
-        #TODO: add generation of Variables for testGenArray
+        for i, g in enumerate(self.generators):
+            self.variables[2+i] = { 'Name': 'Array' + str(i+1), 'Type': 'ARRAY[1..' + str(g['Len']) +'] OF REAL', 'Value' : g['Value']}
+
         return self.variables
 
     def _generateConst (self):
@@ -50,6 +76,7 @@ class Test:
             testvar = []
             wasFix = [False] * len(self.steps[s][0])
             for v in self.steps[s]:
+                #TODO: change to list
                 const = "( " + self.typeVar[0]['Name'] + " := " + str(int(self.steps[s][v][0]))
                 for t in self.typeVar[1]:
                     if str(self.steps[s][v][1][t]['Value']) != '' and (self.steps[s][v][1][t]['Type'].lower() == 'fix' or self.steps[s][v][1][t]['Type'].lower() == '' and wasFix[t] == True):
