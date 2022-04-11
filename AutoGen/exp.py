@@ -71,7 +71,7 @@ class ExpWriter(ExportWriter):
         print ("EXP end declaration...\n")
         self._write("(* @END_DECLARATION := '0' *)\n")
     
-    def writeConstatns(self, constants):
+    def writeConstants(self, constants):
         """Write test values and size constants to file"""
         
         print ("export constants to EXP...\n")
