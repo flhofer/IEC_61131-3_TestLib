@@ -159,9 +159,23 @@ class ExpWriter(ExportWriter):
         self._write('\n', indent=0)
         
         for v in typeVar[2]:
-            self._write('assertEqualsD (    Value1 := ' + instanceName + '.' + typeVar[2][v]['Name'] +',\n')
+            line = ''
+            if typeVar[2][v]['Type'] == 'BOOL':
+                line = 'assertEquals'
+            else:
+                line = 'assertEqualsD'
+            line += ' (    Value1 := ' + instanceName + '.' + typeVar[2][v]['Name'] +',\n'
+            self._write(line)
             self._write('Value2 := ptTestVars^.' + typeVar[2][v]['Name'] + ',\n', indent=9)
-            self._write('MaxCnt := 0, Delay := ptTestVars^.testTime);\n\n', indent=9)
+            line = 'Mode := '
+            
+#            if v.mode[0] == '=' or v.mode[0] == 'VFY':           
+            line += 'mVFY'
+#            elif v.mode[0] == 'BFRNG':
+#                line += 'mBFRNG, '
+#                line += str(v.mode[1])
+            line += ', Delay := ptTestVars^.testTime);\n\n'
+            self._write(line, indent=9)
         
         self._write('sTC_PASS: Pass := TRUE;\n    END_CASE\n', indent=1)
         self.indent=0
