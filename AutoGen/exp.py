@@ -16,7 +16,7 @@ if __name__ == '__main__':
 class ExportWriter:
     """Common test export-import writer class"""
     
-    def __init__(self, fileName, testName, extension='.txt'):
+    def __init__(self, fileName, extension='.txt'):
         """Initialize instance and open output file"""
         try:
             self.testFile = open(fileName + extension, "w")
@@ -24,7 +24,6 @@ class ExportWriter:
             print ("Unable to open file ' + fileName + ' for write")
             raise FileNotFoundError
 
-        self.testName = testName
         self.indent = 0;
 
     def _write(self, text, indent=-1):
@@ -44,34 +43,34 @@ class ExportWriter:
                     
 class ExpWriter(ExportWriter):
     
-    def __init__(self, fileName, testName, extension='.exp'):
-        super().__init__(fileName, testName, extension)
+    def __init__(self, fileName, extension='.exp'):
+        super().__init__(fileName, extension)
     
-    def createHeader(self):
+    def _createHeader(self, testName):
         """Create the EXP POU file header"""
         #TODO: parameter writer
-        print ("EXP header opening " + self.testName + "...\n")
+        print ("EXP header opening " + testName + "...\n")
         self._write("(* @NESTEDCOMMENTS := 'Yes' *)\n")
         self._write("(* @PATH := '' *)\n")
         self._write("(* @OBJECTFLAGS := '0, 8' *)\n")
         self._write("(* @SYMFILEFLAGS := '2048' *)\n")
-        self._write("PROGRAM " + self.testName + "\n")
+        self._write("PROGRAM " + testName + "\n")
     
-    def createFooter(self):
+    def _createFooter(self):
         """Create the EXP file footer"""
         #TODO: parameter writer
        
         print ("EXP POU footer closure...\n")
         self._write("END_PROGRAM\n")    
         
-    def endDeclaration(self):
+    def _endDeclaration(self):
         """End of declaration header"""
         #TODO: parameter writer
         
         print ("EXP end declaration...\n")
         self._write("(* @END_DECLARATION := '0' *)\n")
     
-    def writeConstants(self, constants):
+    def _writeConstants(self, constants):
         """Write test values and size constants to file"""
         
         print ("export constants to EXP...\n")
@@ -98,7 +97,7 @@ class ExpWriter(ExportWriter):
             self._write(text)
         self._write("END_VAR\n")
         
-    def writeVariables(self, variables):
+    def _writeVariables(self, variables):
         """Write test variables needed for test execution"""
         
         print ("export variables to EXP...\n")
@@ -135,12 +134,12 @@ class ExpWriter(ExportWriter):
         self._write("END_VAR\n")
 
         
-    def createStateMachine(self, instanceName, typeVar):
+    def _createStateMachine(self, testName, instanceName, typeVar):
         """Create test state machine, main test execution"""
         
         print ("Create state machine for testing...\n")
         self.indent = 1;
-        self._write("testInit('" + self.testName + "', NoOfTests)\n\n")
+        self._write("testInit('" + testName + "', NoOfTests)\n\n")
         self._write('CASE _tls_ OF\n')
         self._write('sT_INIT:    (* Reset *)\n')
         self.indent = 4;
@@ -180,7 +179,7 @@ class ExpWriter(ExportWriter):
         self._write('sTC_PASS: Pass := TRUE;\n    END_CASE\n', indent=1)
         self.indent=0
         
-    def createTestDUT(self, typeVar):
+    def _createTestDUT(self, typeVar, testName):
         """Create test variable data type for the test parameter table"""
         
         print ("Writing data type used for the test to file..")
@@ -189,7 +188,7 @@ class ExpWriter(ExportWriter):
         self._write("(* @NESTEDCOMMENTS := 'Yes' *)\n")
         self._write("(* @PATH := '' *)\n")
         self._write("(* @OBJECTFLAGS := '0, 8' *)\n")
-        self._write("TYPE Vars" + self.testName + " :\n")
+        self._write("TYPE Vars" + testName + " :\n")
         self._write("STRUCT\n")
         
         self.indent=1
@@ -207,7 +206,17 @@ class ExpWriter(ExportWriter):
         self._write("END_STRUCT\n")
         self._write("END_TYPE\n\n")
         self._write("(* @END_DECLARATION := '0' *)\n")
-            
+    
+    def writeTest(self, test):
+        
+        self._createHeader(test.testName)
+        self._writeConstants(test.constants)
+        self._writeVariables(test.variables)
+        self._endDeclaration()
+        self._createStateMachine(test.testName, test.instanceName, test.typeVar)
+        self._createFooter()
+        self._createTestDUT(test.typeVar, test.testName)
+      
 class XmlWriter(ExportWriter):
     """XML style export writer"""
     #TODO: implement XML writing 

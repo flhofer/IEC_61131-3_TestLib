@@ -67,15 +67,11 @@ class Test:
     
         return constants
         # fix len steps to len array    
-
-    def setTestVars(self, typeVar):
-        self.typeVar = typeVar
     
-    def getTestVars(self):
-        return self.typeVar
-        
-    def setSteps(self, steps):
-        self.steps = steps
-        
-    def getSteps(self):
-        return self.steps
+    def parseData(self):
+        """Parses variables and sequence code to generate additional steps from preset"""
+        self.generateConst()
+        self.generateVars()
+        pass
+    
+    

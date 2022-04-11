@@ -29,26 +29,18 @@ def main(argv):
 	for wbk in wbkiter:
 				
 		# TODO: create multiple tests per sheet, continue on next sheet with new file	
-		testFile = ExpWriter(testName=wbk.testName, fileName=wbk.testName)
+		testFile = ExpWriter(fileName=wbk.testName)
 
 		test = Test(wbk.testName, wbk.instanceName, wbk.fbName)
 		# found header, scan for labels.
-		test.setTestVars(wbk.getFunctionVars()) 
+		test.typeVar = wbk.getFunctionVars()
 		# build step dictionary
-		test.setSteps(wbk.readSequences(test.getTestVars()))
+		test.steps = wbk.readSequences(test.typeVar)
+		# parse data and prepare test structure
+		test.parseData()
 		
-		# test file is open, create header and lets scan for data!e
-		testFile.createHeader()
+		testFile.writeTest(test)
 			
-		
-			
-		testFile.writeConstants(test.generateConst())
-		testFile.writeVariables(test.generateVars())
-		testFile.endDeclaration()
-		testFile.createStateMachine(wbk.instanceName, test.getTestVars())
-		testFile.createFooter()
-		testFile.createTestDUT(test.getTestVars())
-	
 		testFile.close()
 
 if __name__ == "__main__":
