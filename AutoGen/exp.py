@@ -76,26 +76,49 @@ class ExpWriter(ExportWriter):
         print ("export constants to EXP...\n")
         self._write("VAR CONSTANT\n")
         
+        self._indent+=1
+
         for c in constants:
-            text = "    " +  constants[c]['Name'] + " : " + constants[c]['Type'] + " := "
+            text = constants[c]['Name'] + " : " + constants[c]['Type'] + " := "
             if type(constants[c]['Value']) != list:
-                text += str(constants[c]['Value']) + ";\n"
+                self._write(text + str(constants[c]['Value']) + ";\n")
             else:
+                # constant is a list
+                self._write(text+"\n")
+                self._indent+=1
+                text = ''
                 i = 0
+                
+                maxv = 0
                 for v in constants[c]['Value']:
-                    i+=1
-                    text += "\n        (* Test case" + str(i) + "*)\n"
-                    end = False
-                    for w in v:
-                        if end:
-                            text += ",\n"
-                        text += "        " + w
-                        end = True
+                    maxv = max(len(v), maxv)
+                
+                for i, v in enumerate(constants[c]['Value']):
+                    if i:  
+                        self._write(text+',\n')
+                        text = ''
+                    if type(v) != list: # char array, actually
+                        text += v
+                    else:
+                        # constant is a list of lists
+                        if constants[c]['Name'] == 'TestVars':
+                            self._write('\n')
+                            self._write("(* Test case " + str(i+1) + " *)\n")
                         
-                    text += ",\n"
-                text+="\b;"
+                        for j, w in enumerate(v):
+                            if j: 
+                                self._write(text+',\n')
+                                text = ''
+                            text += w
                         
-            self._write(text)
+                        if maxv-len(v) > 0:
+                            self._write(text+',\n')
+                            text = (str(maxv-len(v)) + "( testtime :=  0 )")
+                            
+                self._write(text+';\n')
+                self._indent-=1
+        self._indent-=1
+
         self._write("END_VAR\n")
         
     def _writeVariables(self, variables):
