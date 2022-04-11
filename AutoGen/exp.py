@@ -24,13 +24,13 @@ class ExportWriter:
             print ("Unable to open file ' + fileName + ' for write")
             raise FileNotFoundError
 
-        self.indent = 0;
+        self._indent = 0;
 
     def _write(self, text, indent=-1):
         """Write contents to file with indentation"""
         
-        if -1 == indent:    # no parameter, write with instance indent 
-            indent = self.indent
+        if -1 == indent:    # no parameter, write with instance _indent 
+            indent = self._indent
         
         for i in range(0, indent, 1):
             self.testFile.write("    ")
@@ -92,7 +92,8 @@ class ExpWriter(ExportWriter):
                         text += "        " + w
                         end = True
                         
-                    text += ";\n"
+                    text += ",\n"
+                text+="\b;"
                         
             self._write(text)
         self._write("END_VAR\n")
@@ -101,12 +102,14 @@ class ExpWriter(ExportWriter):
         """Write test variables needed for test execution"""
         
         print ("export variables to EXP...\n")
+        
+        # Default pass return variable
         self._write("VAR_OUTPUT\n")
         self._write("Pass: BOOL;\n", indent=1)
         self._write("END_VAR\n")
+
         self._write("VAR\n")
-        
-        self.indent=2
+        self._indent=2
 
         for c in variables:
             self._write(variables[c]['Name'] + " : " + variables[c]['Type'], indent=1)
@@ -130,7 +133,7 @@ class ExpWriter(ExportWriter):
                             end = True
                         
             self._write(";\n", indent=0)
-        self.indent=0                       
+        self._indent=0                       
         self._write("END_VAR\n")
 
         
@@ -138,11 +141,11 @@ class ExpWriter(ExportWriter):
         """Create test state machine, main test execution"""
         
         print ("Create state machine for testing...\n")
-        self.indent = 1;
+        self._indent = 1;
         self._write("testInit('" + test.testName + "', NoOfTests)\n\n")
         self._write('CASE _tls_ OF\n')
         self._write('sT_INIT:    (* Reset *)\n')
-        self.indent = 4;
+        self._indent = 4;
         self._write('SysMemSet (ADR(' + test.instanceName + '), 0, SIZEOF(' + test.instanceName + '));\n')
         self._write('testParam(pSteps, SIZEOF(TestVars)/NoOfTests/SIZEOF(Tests_Values[_tlt_,1]));\n')
         self._write('\n', indent=0)
@@ -177,7 +180,7 @@ class ExpWriter(ExportWriter):
             self._write(line, indent=9)
         
         self._write('sTC_PASS: Pass := TRUE;\n    END_CASE\n', indent=1)
-        self.indent=0
+        self._indent=0
         
     def _createTestDUT(self, typeVar, testName):
         """Create test variable data type for the test parameter table"""
@@ -191,7 +194,7 @@ class ExpWriter(ExportWriter):
         self._write("TYPE Vars" + testName + " :\n")
         self._write("STRUCT\n")
         
-        self.indent=1
+        self._indent=1
         
         self._write(typeVar[0]['Name'] + ' : ' + typeVar[0]['Type'] + ';\n')
         self._write('(* Inputs *)\n')
@@ -202,7 +205,7 @@ class ExpWriter(ExportWriter):
         for v in typeVar[2]:
             self._write(typeVar[2][v]['Name'] + ' : ' + typeVar[2][v]['Type'] + ';\n')
     
-        self.indent=0
+        self._indent=0
         self._write("END_STRUCT\n")
         self._write("END_TYPE\n\n")
         self._write("(* @END_DECLARATION := '0' *)\n")
