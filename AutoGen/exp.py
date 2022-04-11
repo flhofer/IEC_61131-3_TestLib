@@ -134,38 +134,38 @@ class ExpWriter(ExportWriter):
         self._write("END_VAR\n")
 
         
-    def _createStateMachine(self, testName, instanceName, typeVar):
+    def _createStateMachine(self, test):
         """Create test state machine, main test execution"""
         
         print ("Create state machine for testing...\n")
         self.indent = 1;
-        self._write("testInit('" + testName + "', NoOfTests)\n\n")
+        self._write("testInit('" + test.testName + "', NoOfTests)\n\n")
         self._write('CASE _tls_ OF\n')
         self._write('sT_INIT:    (* Reset *)\n')
         self.indent = 4;
-        self._write('SysMemSet (ADR(' + instanceName + '), 0, SIZEOF(' + instanceName + '));\n')
+        self._write('SysMemSet (ADR(' + test.instanceName + '), 0, SIZEOF(' + test.instanceName + '));\n')
         self._write('testParam(pSteps, SIZEOF(TestVars)/NoOfTests/SIZEOF(Tests_Values[_tlt_,1]));\n')
         self._write('\n', indent=0)
         self._write('sT_RUN:    (* test run *)\n', indent=1)
         self._write('ptTestVars := ADR(Tests_Values[_tlt_,_tlp_]);\n')
         
-        self._write(instanceName + '(\n')
+        self._write(test.instanceName + '(\n')
         
-        for v in typeVar[1]:
-            self._write(typeVar[1][v]['Name'] + ' := ptTestVars^.' + typeVar[1][v]['Name'] + '\n', indent=5)
+        for v in test.typeVar[1]:
+            self._write(test.typeVar[1][v]['Name'] + ' := ptTestVars^.' + test.typeVar[1][v]['Name'] + '\n', indent=5)
             
         self._write(');\n', indent=5)
         self._write('\n', indent=0)
         
-        for v in typeVar[2]:
+        for v in test.typeVar[2]:
             line = ''
-            if typeVar[2][v]['Type'] == 'BOOL':
+            if test.typeVar[2][v]['Type'] == 'BOOL':
                 line = 'assertEquals'
             else:
                 line = 'assertEqualsD'
-            line += ' (    Value1 := ' + instanceName + '.' + typeVar[2][v]['Name'] +',\n'
+            line += ' (    Value1 := ' + test.instanceName + '.' + test.typeVar[2][v]['Name'] +',\n'
             self._write(line)
-            self._write('Value2 := ptTestVars^.' + typeVar[2][v]['Name'] + ',\n', indent=9)
+            self._write('Value2 := ptTestVars^.' + test.typeVar[2][v]['Name'] + ',\n', indent=9)
             line = 'Mode := '
             
 #            if v.mode[0] == '=' or v.mode[0] == 'VFY':           
@@ -213,7 +213,7 @@ class ExpWriter(ExportWriter):
         self._writeConstants(test.constants)
         self._writeVariables(test.variables)
         self._endDeclaration()
-        self._createStateMachine(test.testName, test.instanceName, test.typeVar)
+        self._createStateMachine(test)
         self._createFooter()
         self._createTestDUT(test.typeVar, test.testName)
       
