@@ -48,17 +48,19 @@ class Test:
         seqlen = 0
         for s in self.steps:
             testvar = []
+            wasFix = [False] * len(self.steps[s][0])
             for v in self.steps[s]:
                 const = "( " + self.typeVar[0]['Name'] + " := " + str(int(self.steps[s][v][0]))
                 for t in self.typeVar[1]:
-                    if str(self.steps[s][v][1][t]['Value']) != '':
+                    if str(self.steps[s][v][1][t]['Value']) != '' and (self.steps[s][v][1][t]['Type'].lower() == 'fix' or self.steps[s][v][1][t]['Type'].lower() == '' and wasFix[t] == True):
                         const += ", " + self.typeVar[1][t]['Name'] + " := " + str((self.steps[s][v][1][t]['Value']))
+                        wasFix[t] = True
+                    else:
+                        wasFix[t] = False
         
-                wasFix = False
                 for t in self.typeVar[2]:
-                    if self.typeVar[2][t]['Type'].lower() == 'fix' or self.typeVar[2][t]['Type'].lower() and wasFix:
+                    if str(self.steps[s][v][1][t]['Value']) != '':
                         const += ", " + self.typeVar[2][t]['Name'] + " := " + str(self.steps[s][v][2][t]['Value'])
-                        wasFix = True
                 const += " )"
                     
                 testvar.append(const)
