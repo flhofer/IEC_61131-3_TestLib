@@ -117,7 +117,7 @@ class Workbook:
         i+=1 # skip the line with hash
         cnt = 0
         for ntype in typeDef[1]:
-            var = {"Value": columns[i]}
+            var = {"Value": columns[i], "Type": columns[i+1]}
             inputs [cnt]= var.copy()
             var.clear()
             i+= 2
@@ -147,6 +147,7 @@ class Workbook:
         steps = {}
         
         while (self.sh.nrows > self.scanPos):
+            print ("Sequence ", cnt)
             steps[cnt] = self.readSequence(typeDef)
             if steps[cnt] == {}:
                 del steps[cnt]
