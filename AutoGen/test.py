@@ -17,6 +17,7 @@ class Test:
     constants = {}
     variables = {}
     
+    # From workbook -> may be removed in future
     typeVar = {}
     steps = {}
     
@@ -26,16 +27,18 @@ class Test:
         self.instanceName = instanceName
         self.fbName = fbName
     
-    def generateVars(self):
+    def _generateVars(self):
         """Generate -required- variable list to add to the test POU"""
     
-        variables = {0:{ 'Name': self.instanceName,    'Type': self.fbName}}
-        variables[1] = { 'Name': 'ptrVars', 'Type': 'POINTER TO ' + self.testName + '_vars'}
-        variables[2] = { 'Name': 'i', 'Type': 'INT', 'Value' : "1"}
+        self.variables = {0:{ 'Name': 'ptrVars', 'Type': 'POINTER TO ' + self.testName + '_vars'}}
+        self.variables[1] = { 'Name': 'i', 'Type': 'INT', 'Value' : "1"}
+        if self.fbName != '':
+            self.variables[2] = { 'Name': self.instanceName,    'Type': self.fbName}
     
-        return variables
+        #TODO: add generation of Variables for testGenArray
+        return self.variables
 
-    def generateConst (self):
+    def _generateConst (self):
         """Generate constant values for the test
         Generate values that represent test parameters and test size parameters
         to add to the test POU"""
@@ -48,10 +51,14 @@ class Test:
             for v in self.steps[s]:
                 const = "( " + self.typeVar[0]['Name'] + " := " + str(int(self.steps[s][v][0]))
                 for t in self.typeVar[1]:
-                    const += ", " + self.typeVar[1][t]['Name'] + " := " + str((self.steps[s][v][1][t]['Value']))
+                    if str(self.steps[s][v][1][t]['Value']) != '':
+                        const += ", " + self.typeVar[1][t]['Name'] + " := " + str((self.steps[s][v][1][t]['Value']))
         
+                wasFix = False
                 for t in self.typeVar[2]:
-                    const += ", " + self.typeVar[2][t]['Name'] + " := " + str(self.steps[s][v][2][t]['Value'])
+                    if self.typeVar[2][t]['Type'].lower() == 'fix' or self.typeVar[2][t]['Type'].lower() and wasFix:
+                        const += ", " + self.typeVar[2][t]['Name'] + " := " + str(self.steps[s][v][2][t]['Value'])
+                        wasFix = True
                 const += " )"
                     
                 testvar.append(const)
@@ -60,18 +67,23 @@ class Test:
             testvars.append(testvar)
         
         # Finally, return the constants for test function 
-        constants = {0:{ 'Name': "NoOfTests",    'Type': "USINT", 'Value' : len(testvars)}}
-        constants[1] = { 'Name': "NoOfInputs",    'Type': "USINT", 'Value' : seqlen}
-        constants[2] = { 'Name': "TestVars",    'Type': "ARRAY [1..NoOfTests,1..NoOfInputs] OF Vars" + self.testName, 'Value' : testvars}
+        self.constants = {0:{ 'Name': "NoOfTests",    'Type': "USINT", 'Value' : len(testvars)}}
+        self.constants[1] = { 'Name': "NoOfInputs",    'Type': "USINT", 'Value' : seqlen}
+        self.constants[2] = { 'Name': "TestVars",    'Type': "ARRAY [1..NoOfTests,1..NoOfInputs] OF Vars" + self.testName, 'Value' : testvars}
         #print constants
     
-        return constants
+        return self.constants
         # fix len steps to len array    
+        
+    def _updateStates(self):
+        pass    
     
     def parseData(self):
         """Parses variables and sequence code to generate additional steps from preset"""
-        self.generateConst()
-        self.generateVars()
+        self._generateConst()
+        self._generateVars()
+        
+        self._updateStates()
         pass
     
     
