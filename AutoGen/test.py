@@ -14,8 +14,8 @@ class Test:
     testName = ''
     fbName = ''
     instanceName = ''
-    constants = {}
-    variables = {}
+    constants = []
+    variables = []
     generators = []
     
     # From workbook -> may be removed in future
@@ -54,13 +54,13 @@ class Test:
             if ArrayVals['Len'] > 0:
                 self.generators.append(ArrayVals)
 
-        self.variables = {0:{ 'Name': 'ptrVars', 'Type': 'POINTER TO ' + self.testName + '_vars'}}
-        self.variables[1] = { 'Name': 'i', 'Type': 'INT', 'Value' : "1"}
+        self.variables.append({ 'Name': 'ptrVars', 'Type': 'POINTER TO ' + self.testName + '_vars'})
+        self.variables.append({ 'Name': 'i', 'Type': 'INT', 'Value' : "1"})
         if self.fbName != '':
-            self.variables[2] = { 'Name': self.instanceName,    'Type': self.fbName}
+            self.variables.append({ 'Name': self.instanceName,    'Type': self.fbName})
     
         for i, g in enumerate(self.generators):
-            self.variables[2+i] = { 'Name': 'Array' + str(i+1), 'Type': 'ARRAY[1..' + str(g['Len']) +'] OF REAL', 'Value' : g['Value']}
+            self.variables.append({ 'Name': 'Array' + str(i+1), 'Type': 'ARRAY[1..' + str(g['Len']) +'] OF REAL', 'Value' : g['Value']})
 
         return self.variables
 
@@ -96,9 +96,9 @@ class Test:
             testvars.append(testvar)
         
         # Finally, return the constants for test function 
-        self.constants = {0:{ 'Name': "NoOfTests",    'Type': "USINT", 'Value' : len(testvars)}}
-        self.constants[1] = { 'Name': "NoOfInputs",    'Type': "USINT", 'Value' : seqlen}
-        self.constants[2] = { 'Name': "TestVars",    'Type': "ARRAY [1..NoOfTests,1..NoOfInputs] OF Vars" + self.testName, 'Value' : testvars}
+        self.constants.append({ 'Name': "NoOfTests",    'Type': "USINT", 'Value' : len(testvars)})
+        self.constants.append({ 'Name': "NoOfInputs",    'Type': "USINT", 'Value' : seqlen})
+        self.constants.append({ 'Name': "TestVars",    'Type': "ARRAY [1..NoOfTests,1..NoOfInputs] OF Vars" + self.testName, 'Value' : testvars})
         #print constants
     
         return self.constants

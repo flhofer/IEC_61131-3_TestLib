@@ -79,9 +79,9 @@ class ExpWriter(ExportWriter):
         self._indent+=1
 
         for c in constants:
-            text = constants[c]['Name'] + " : " + constants[c]['Type'] + " := "
-            if type(constants[c]['Value']) != list:
-                self._write(text + str(constants[c]['Value']) + ";\n")
+            text = c['Name'] + " : " + c['Type'] + " := "
+            if type(c['Value']) != list:
+                self._write(text + str(c['Value']) + ";\n")
             else:
                 # constant is a list
                 self._write(text+"\n")
@@ -90,10 +90,10 @@ class ExpWriter(ExportWriter):
                 i = 0
                 
                 maxv = 0
-                for v in constants[c]['Value']:
+                for v in c['Value']:
                     maxv = max(len(v), maxv)
                 
-                for i, v in enumerate(constants[c]['Value']):
+                for i, v in enumerate(c['Value']):
                     if i:  
                         self._write(text+',\n')
                         text = ''
@@ -101,7 +101,7 @@ class ExpWriter(ExportWriter):
                         text += v
                     else:
                         # constant is a list of lists
-                        if constants[c]['Name'] == 'TestVars':
+                        if c['Name'] == 'TestVars':
                             self._write('\n')
                             self._write("(* Test case " + str(i+1) + " *)\n")
                         
@@ -135,16 +135,16 @@ class ExpWriter(ExportWriter):
         self._indent=2
 
         for c in variables:
-            self._write(variables[c]['Name'] + " : " + variables[c]['Type'], indent=1)
+            self._write(c['Name'] + " : " + c['Type'], indent=1)
             
-            if 'Value' in variables[c]:
+            if 'Value' in c:
                 self._write(" := ", indent=0);
-                if type(variables[c]['Value']) != list:
-                    self._write(str(variables[c]['Value']), indent=0)
+                if type(c['Value']) != list:
+                    self._write(str(c['Value']), indent=0)
                 else:
                     i = 0
                     self._write('\n',indent=0)
-                    for v in variables[c]['Value']:
+                    for v in c['Value']:
                         i+=1
                         self._write("(* Test case" + str(i) + "*)")
                         
