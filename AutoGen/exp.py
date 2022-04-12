@@ -9,6 +9,7 @@
 # -----------------------------------------------------------
 
 from builtins import list
+from settings import TEST_NAME_MAX
 
 if __name__ == '__main__':
     pass
@@ -162,7 +163,7 @@ class ExpWriter(ExportWriter):
         
         print ("Create state machine for testing...\n")
         self._indent = 1;
-        self._write("testInit('" + test.testName + "', NoOfTests)\n\n")
+        self._write("testInit('" + test.testName[:TEST_NAME_MAX] + "', NoOfTests)\n\n")
         self._write('CASE _tls_ OF\n')
         self._write('sT_INIT:    (* Reset *)\n')
         self._indent = 4;
