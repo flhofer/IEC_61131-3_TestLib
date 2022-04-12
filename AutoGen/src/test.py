@@ -10,6 +10,7 @@ email info@florianhofer.it
 -----------------------------------------------------------
 '''
 from setuptools.dist import sequence
+from settings import *
 
 #TODO: mutate to data object/class
 class Test:
@@ -21,7 +22,7 @@ class Test:
     maxSteps = 1
 
     ''' Test data storage '''
-    varDefs = { 'Time': {},  'Output': [], 'Input' : [] }
+    varDefs = { TEST_TIME: {},  TEST_OUTPUT: [], TEST_INPUT : [] }
     initSequences = []  # TODO: for now only single Init
     runSequences = []
 
@@ -38,15 +39,15 @@ class Test:
     
     def appendOutputType(self, varDesc ):
         """ Add a output variable to variable descriptors """
-        self.varDefs['Output'].append(varDesc)
+        self.varDefs[TEST_OUTPUT].append(varDesc)
         
     def appendInputType(self, varDesc ):
         """ Add a input variable to variable descriptors """
-        self.varDefs['Input'].append(varDesc)
+        self.varDefs[TEST_INPUT].append(varDesc)
     
     def setTimeType(self, timeDesc):
         """ Set the time base for the test """
-        self.varDefs['Time'] = timeDesc
+        self.varDefs[TEST_TIME] = timeDesc
 
     def appendRunSequence(self, sequence):
         """ adds a Run-state Sequence to the list """
@@ -58,19 +59,19 @@ class Test:
         self.generators = []
         # Collector for the parametrized test values
         for sequence in self.runSequences:
-            generator = { 'Len' : 0, 'Name' : '', 'Value' : '', 'Test': 0}
+            generator = { 'Len' : 0, VAR_NAME : '', VAR_VALUE : '', 'Test': 0}
             wasGenArr = False
-            for i, varType in enumerate(self.varDefs['Input']): 
+            for i, varType in enumerate(self.varDefs[TEST_INPUT]): 
                 for varValues in sequence:
-                    if varValues['Input'][i]['Mode'].lower() == 'tuple':
-                        generator['Value'] = 'rTuple'
+                    if varValues[TEST_INPUT][i][VAR_MODE].lower() == 'tuple':
+                        generator[VAR_VALUE] = 'rTuple'
                         wasGenArr = True
-                        generator['Name'] = varType['Name']
-                        generator['Value'] += ', ' + varValues['Input'][i]['Value']   
+                        generator[VAR_NAME] = varType[VAR_NAME]
+                        generator[VAR_VALUE] += ', ' + varValues[TEST_INPUT][i][VAR_VALUE]   
                         generator['Test'] = sequence
                         generator['Len']+=3
-                    elif str(varValues['Input'][i]['Value']) != '' and varValues['Input'][i]['Mode'].lower() == '' and wasGenArr == True:
-                        generator['Value'] += ', ' + varValues['Input'][i]['Value']
+                    elif str(varValues[TEST_INPUT][i][VAR_VALUE]) != '' and varValues[TEST_INPUT][i][VAR_MODE].lower() == '' and wasGenArr == True:
+                        generator[VAR_VALUE] += ', ' + varValues[TEST_INPUT][i][VAR_VALUE]
                         generator['Len']+=2
                     else:
                         wasGenArr = False                    
@@ -78,13 +79,13 @@ class Test:
             if generator['Len'] > 0:
                 self.generators.append(generator)
 
-        self.variables.append({ 'Name': 'ptrVars', 'Type': 'POINTER TO ' + self.testName + '_vars'})
-        self.variables.append({ 'Name': 'i', 'Type': 'INT', 'Value' : "1"})
+        self.variables.append({ VAR_NAME: 'ptrVars', VAR_TYPE: 'POINTER TO ' + self.testName + '_vars'})
+        self.variables.append({ VAR_NAME: 'i', VAR_TYPE: 'INT', VAR_VALUE : "1"})
         if self.fbName != '':
-            self.variables.append({ 'Name': self.instanceName,    'Type': self.fbName})
+            self.variables.append({ VAR_NAME: self.instanceName,    VAR_TYPE: self.fbName})
     
         for i, generator in enumerate(self.generators):
-            self.variables.append({ 'Name': 'Array' + str(i+1), 'Type': 'ARRAY[1..' + str(generator['Len']) +'] OF REAL', 'Value' : generator['Value']})
+            self.variables.append({ VAR_NAME: 'Array' + str(i+1), VAR_TYPE: 'ARRAY[1..' + str(generator['Len']) +'] OF REAL', VAR_VALUE : generator[VAR_VALUE]})
 
         return self.variables
 
@@ -97,23 +98,23 @@ class Test:
         testvars = []
         for sequence in self.runSequences:
             testvar = []
-            wasFix = [False] * len(self.varDefs['Input'])
+            wasFix = [False] * len(self.varDefs[TEST_INPUT])
             for varValues in sequence:
                 #TODO: change to list
-                const = "( " + self.varDefs['Time']['Name'] + " := " + str(int(varValues['Time']))
-                for i, varType in enumerate(self.varDefs['Input']):
-                    if str(varValues['Input'][i]['Value']) != '' and (varValues['Input'][i]['Mode'].lower() == 'fix' or varValues['Input'][i]['Mode'].lower() == '' and wasFix[i] == True):
-                        const += ", " + varType['Name'] + " := " + str(varValues['Input'][i]['Value'])
+                const = "( " + self.varDefs[TEST_TIME][VAR_NAME] + " := " + str(int(varValues[TEST_TIME]))
+                for i, varType in enumerate(self.varDefs[TEST_INPUT]):
+                    if str(varValues[TEST_INPUT][i][VAR_VALUE]) != '' and (varValues[TEST_INPUT][i][VAR_MODE].lower() == 'fix' or varValues[TEST_INPUT][i][VAR_MODE].lower() == '' and wasFix[i] == True):
+                        const += ", " + varType[VAR_NAME] + " := " + str(varValues[TEST_INPUT][i][VAR_VALUE])
                         wasFix[i] = True
-                        varType['Mode'] = 'fix' # TODO just temporary
+                        varType[VAR_MODE] = 'fix' # TODO just temporary
                     else:
-                        varType['Mode'] = varValues['Input'][i]['Mode']
+                        varType[VAR_MODE] = varValues[TEST_INPUT][i][VAR_MODE]
                         wasFix[i] = False
         
-                for i, varType in enumerate(self.varDefs['Output']):
-                    if str(varValues['Input'][i]['Value']) != '':
-                        const += ", " + varType['Name'] + " := " + str(varValues['Output'][i]['Value'])
-                        varType['Mode'] = varValues['Output'][i]['Type']
+                for i, varType in enumerate(self.varDefs[TEST_OUTPUT]):
+                    if str(varValues[TEST_OUTPUT][i][VAR_VALUE]) != '':
+                        const += ", " + varType[VAR_NAME] + " := " + str(varValues[TEST_OUTPUT][i][VAR_VALUE])
+                        varType[VAR_TEST] = varValues[TEST_OUTPUT][i][VAR_TEST]
                 const += " )"
                     
                 testvar.append(const)
@@ -122,9 +123,9 @@ class Test:
             testvars.append(testvar)
         
         # Finally, return the constants for test function 
-        self.constants.append({ 'Name': "NoOfTests",    'Type': "USINT", 'Value' : len(testvars)})
-        self.constants.append({ 'Name': "NoOfInputs",    'Type': "USINT", 'Value' : self.maxSteps})
-        self.constants.append({ 'Name': "TestVars",    'Type': "ARRAY [1..NoOfTests,1..NoOfInputs] OF Vars" + self.testName, 'Value' : testvars})
+        self.constants.append({ VAR_NAME: "NoOfTests",    VAR_TYPE: "USINT", VAR_VALUE : len(testvars)})
+        self.constants.append({ VAR_NAME: "NoOfInputs",    VAR_TYPE: "USINT", VAR_VALUE : self.maxSteps})
+        self.constants.append({ VAR_NAME: "TestVars",    VAR_TYPE: "ARRAY [1..NoOfTests,1..NoOfInputs] OF Vars" + self.testName, VAR_VALUE : testvars})
         #print constants
     
         return self.constants  

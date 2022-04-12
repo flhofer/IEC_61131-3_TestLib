@@ -13,6 +13,7 @@ email info@florianhofer.it
 import xlrd
 import os.path
 from test import Test
+from settings import *
 
 class Workbook:
     
@@ -62,7 +63,7 @@ class Workbook:
     def getFunctionVars(self, test):
         """Collect the names and types of I/O vaiables in tables"""
         
-        test.setTimeType({"Name" : self._sheet.cell(self._scanPos,1).value, "Type": "DWORD"})
+        test.setTimeType({VAR_NAME : self._sheet.cell(self._scanPos,1).value, VAR_TYPE: "DWORD"})
 
         # read actual line, field 2 on
         columns = self._sheet.row_values(self._scanPos, 2)
@@ -72,14 +73,14 @@ class Workbook:
         for field in coliterator:
             if field != None :
                 if not field == "#":
-                    newVar = {"Name" : field}
+                    newVar = {VAR_NAME : field}
                     try: 
                         field = next(coliterator)
                     except:
                         print ("end of line!!")
                         
                     if field != None:
-                        newVar["Type"] = field
+                        newVar[VAR_TYPE] = field
                     
                     if not outToIn :
                         test.appendOutputType(newVar.copy())
@@ -103,20 +104,20 @@ class Workbook:
         testTime = fields[0]
         
         i = 1
-        for _ in typeDef['Output']:
-            varValue = {"Value": fields[i], "Type": fields[i+1]}
+        for _ in typeDef[TEST_OUTPUT]:
+            varValue = {VAR_VALUE: fields[i], VAR_TEST: fields[i+1]}
             outputs.append(varValue.copy())
             varValue.clear()
             i+= 2
         
         i+=1 # skip the line with hash
-        for _ in typeDef['Input']:
-            varValue = {"Value": fields[i], "Mode": fields[i+1]}
+        for _ in typeDef[TEST_INPUT]:
+            varValue = {VAR_VALUE: fields[i], VAR_MODE: fields[i+1]}
             inputs.append(varValue.copy())
             varValue.clear()
             i+= 2
             
-        return { 'Time': testTime, 'Input' : inputs, 'Output' : outputs}    
+        return { TEST_TIME: testTime, TEST_INPUT : inputs, TEST_OUTPUT : outputs}    
         
     def _readRunSequence(self, typeDef):
         """Read a test sequence in spreadsheet, group them into a value set"""

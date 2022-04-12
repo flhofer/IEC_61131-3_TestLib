@@ -11,7 +11,7 @@ email info@florianhofer.it
 '''
 
 from builtins import list
-from settings import TEST_NAME_MAX
+from settings import *
 
 if __name__ == '__main__':
     pass
@@ -88,9 +88,9 @@ class ExpWriter(ExportWriter):
         self._indent+=1
 
         for constant in test.constants:
-            text = constant['Name'] + " : " + constant['Type'] + " := "
-            if type(constant['Value']) != list:
-                self._write(text + str(constant['Value']) + ";\n")
+            text = constant[VAR_NAME] + " : " + constant[VAR_TYPE] + " := "
+            if type(constant[VAR_VALUE]) != list:
+                self._write(text + str(constant[VAR_VALUE]) + ";\n")
             else:
                 # constant is a list
                 self._write(text+"\n")
@@ -98,7 +98,7 @@ class ExpWriter(ExportWriter):
                 text = ''
                 i = 0
                 
-                for i, value in enumerate(constant['Value']):
+                for i, value in enumerate(constant[VAR_VALUE]):
                     if i:  
                         self._write(text+',\n')
                         text = ''
@@ -106,7 +106,7 @@ class ExpWriter(ExportWriter):
                         text += value
                     else:
                         # constant is a list of lists
-                        if constant['Name'] == 'TestVars':
+                        if constant[VAR_NAME] == 'TestVars':
                             self._write('\n')
                             self._write("(* Test case " + str(i+1) + " *)\n")
                         
@@ -141,16 +141,16 @@ class ExpWriter(ExportWriter):
         self._indent=2
 
         for variable in test.variables:
-            self._write(variable['Name'] + " : " + variable['Type'], indent=1)
+            self._write(variable[VAR_NAME] + " : " + variable[VAR_TYPE], indent=1)
             
-            if 'Value' in variable:
+            if VAR_VALUE in variable:
                 self._write(" := ", indent=0);
-                if type(variable['Value']) != list:
-                    self._write(str(variable['Value']), indent=0)
+                if type(variable[VAR_VALUE]) != list:
+                    self._write(str(variable[VAR_VALUE]), indent=0)
                 else:
                     i = 0
                     self._write('\n',indent=0)
-                    for value in variable['Value']:
+                    for value in variable[VAR_VALUE]:
                         i+=1
                         self._write("(* Test case" + str(i) + "*)")
                         
@@ -212,28 +212,28 @@ class ExpWriter(ExportWriter):
         
         self._write(test.instanceName + '(\n')
         
-        for varType in test.varDefs['Input']:
-            self._write(varType['Name'] + ' := ptTestVars^.' + varType['Name'] + '\n', indent=5)
+        for varType in test.varDefs[TEST_INPUT]:
+            self._write(varType[VAR_NAME] + ' := ptTestVars^.' + varType[VAR_NAME] + '\n', indent=5)
             
         self._write(');\n', indent=5)
         self._write('\n', indent=0)
         
-        for varType in test.varDefs['Output']:
+        for varType in test.varDefs[TEST_OUTPUT]:
             line = ''
-            if varType['Type'] == 'BOOL':
+            if varType[VAR_TYPE] == 'BOOL':
                 line = 'assertEquals '
-            elif varType['Type'] == 'STRUCT':
+            elif varType[VAR_TYPE] == 'STRUCT':
                 line = 'assertEqualsO'
             else:
                 line = 'assertEqualsD'
-            line += ' ( Value1 := ' + test.instanceName + '.' + varType['Name'] +',\n'
+            line += ' ( Value1 := ' + test.instanceName + '.' + varType[VAR_NAME] +',\n'
             self._write(line)
-            self._write('Value2 := ptTestVars^.' + varType['Name'] + ',\n', indent=8)
+            self._write('Value2 := ptTestVars^.' + varType[VAR_NAME] + ',\n', indent=8)
             line = 'Mode := '
             
             #TODO: structure not defiend yet
-            #if varType['Type'] == '=' or varType['Type'] == 'VFY': 
-            if varType['Type'] == 'BFRNG':
+            #if varType[VAR_TEST] == '=' or varType[VAR_TEST] == 'VFY': 
+            if varType[VAR_TEST] == 'BFRNG':
                 line += 'mBFRNG + '
                 line += str(varType.mode[1])
             else:
@@ -261,14 +261,14 @@ class ExpWriter(ExportWriter):
         
         self._indent=1
         
-        self._write(varDefs['Time']['Name'] + ' : ' + varDefs['Time']['Type'] + ';\n')
+        self._write(varDefs[TEST_TIME][VAR_NAME] + ' : ' + varDefs[TEST_TIME][VAR_TYPE] + ';\n')
         self._write('(* Inputs *)\n')
-        for varType in varDefs['Input']:
-            self._write(varType['Name'] + ' : ' + varType['Type'] + ';\n')
+        for varType in varDefs[TEST_INPUT]:
+            self._write(varType[VAR_NAME] + ' : ' + varType[VAR_TYPE] + ';\n')
     
         self._write('(* Expected outputs *)\n')
-        for varType in varDefs['Output']:
-            self._write(varType['Name'] + ' : ' + varType['Type'] + ';\n')
+        for varType in varDefs[TEST_OUTPUT]:
+            self._write(varType[VAR_NAME] + ' : ' + varType[VAR_TYPE] + ';\n')
     
         self._indent=0
         self._write("END_STRUCT\n")
