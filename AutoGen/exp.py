@@ -168,22 +168,25 @@ class ExpWriter(ExportWriter):
         self._indent = 4;
         self._write('SysMemSet (ADR(' + test.instanceName + '), 0, SIZEOF(' + test.instanceName + '));\n')
 
-        sel = False
-        for i, sequence in enumerate (test.sequences):
-            if len(sequence) < test.maxSteps:
-                if sel:
-                    self._write('ELSIF _tst_ = ' + str(i) + 'THEN\n')
-                else:
-                    self._write('IF _tst_ = ' + str(i) + 'THEN\n')
-                    
-                self._write('testParam(pSteps, '+ str(test.maxSteps) +');\n', self._indent+1)
+        if test.maxSteps:
+            # Write steplenght only if needed
+            selSteps = False
+            for i, sequence in enumerate (test.sequences):
+                if len(sequence) < test.maxSteps:
+                    text = ''
+                    if selSteps:
+                        text = 'ELS'
+
+                    selSteps = True
+                    text += 'IF _tst_ = ' + str(i) + ' THEN\n'
+                    self._write(text)
+                    self._write('testParam(pSteps, '+ str(len(sequence)) +');\n', self._indent+1)
+            if selSteps:
+                self._write('ELSE\n');
+                self._indent+=1
+            self._write('testParam(pSteps, '+ str(test.maxSteps) +');\n')
+            if selSteps:
                 self._indent-=1
-        if sel:
-            self._write('ELSE\n');
-            self._indent+=1
-        self._write('testParam(pSteps, '+ str(test.maxSteps) +');\n')
-        if sel:
-            self._indent-=1
         
         self._write('\n', indent=0)
         self._write('sT_RUN:    (* test run *)\n', indent=1)
