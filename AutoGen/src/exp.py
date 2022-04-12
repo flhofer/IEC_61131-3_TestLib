@@ -43,7 +43,13 @@ class ExportWriter:
     def close(self):
         """Close test file"""
         self.testFile.close()
-                    
+        
+    def __enter__(self):
+        return self
+    
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        self.close()
+        
 class ExpWriter(ExportWriter):
     
     def __init__(self, fileName, extension='.exp'):

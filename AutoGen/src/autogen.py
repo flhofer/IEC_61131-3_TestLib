@@ -13,7 +13,6 @@ email info@florianhofer.it
 
 from exp import ExpWriter
 from wbk import Workbook
-from test import Test
 import sys
 
 def main(argv):
@@ -24,27 +23,17 @@ def main(argv):
 	Read test Workbook and generate test cases/import for the IEC61131-3
 	""" 
 	
-	wb = Workbook('test_unit.xlsx')
-	
-	wbkiter = iter(wb)
+	workBook = Workbook('test_unit.xlsx')
+	wbkiter = iter(workBook)
 	
 	#iterate though sheets
-	for wbk in wbkiter:
+	for sheet in wbkiter:
 				
-		# TODO: create multiple tests per sheet, continue on next sheet with new file	
-		testFile = ExpWriter(fileName=wbk.testName)
+		# TODO: create multiple tests per sheet, continue on next sheet with new file, use generator!
+		test = sheet.readTest()		
 
-		test = Test(wbk.testName, wbk.instanceName, wbk.fbName)
-		# found header, scan for labels.
-		varTypes = wbk.getFunctionVars()
-		# build step dictionary
-		test.sequences = wbk.readSequences(varTypes)
-		# parse data and prepare test structure
-		test.parseData(varTypes)
-		
-		testFile.writeTest(test)
-			
-		testFile.close()
+		with ExpWriter(fileName=test.testName) as testFile:
+			testFile.writeTest(test)
 
 if __name__ == "__main__":
 	main(sys.argv[1:])
