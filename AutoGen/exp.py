@@ -70,7 +70,7 @@ class ExpWriter(ExportWriter):
         print ("EXP end declaration...\n")
         self._write("(* @END_DECLARATION := '0' *)\n")
     
-    def _writeConstants(self, constants):
+    def _writeConstants(self, test):
         """Write test values and size constants to file"""
         
         print ("export constants to EXP...\n")
@@ -78,7 +78,7 @@ class ExpWriter(ExportWriter):
         
         self._indent+=1
 
-        for c in constants:
+        for c in test.constants:
             text = c['Name'] + " : " + c['Type'] + " := "
             if type(c['Value']) != list:
                 self._write(text + str(c['Value']) + ";\n")
@@ -88,10 +88,6 @@ class ExpWriter(ExportWriter):
                 self._indent+=1
                 text = ''
                 i = 0
-                
-                maxv = 0
-                for v in c['Value']:
-                    maxv = max(len(v), maxv)
                 
                 for i, v in enumerate(c['Value']):
                     if i:  
@@ -111,9 +107,9 @@ class ExpWriter(ExportWriter):
                                 text = ''
                             text += w
                         
-                        if maxv-len(v) > 0:
+                        if test.maxSteps-len(v) > 0:
                             self._write(text+',\n')
-                            text = (str(maxv-len(v)) + "( testtime :=  0 )")
+                            text = (str(test.maxSteps-len(v)) + "( testtime :=  0 )")
                             
                 self._write(text+';\n')
                 self._indent-=1
@@ -121,7 +117,7 @@ class ExpWriter(ExportWriter):
 
         self._write("END_VAR\n")
         
-    def _writeVariables(self, variables):
+    def _writeVariables(self, test):
         """Write test variables needed for test execution"""
         
         print ("export variables to EXP...\n")
@@ -134,7 +130,7 @@ class ExpWriter(ExportWriter):
         self._write("VAR\n")
         self._indent=2
 
-        for c in variables:
+        for c in test.variables:
             self._write(c['Name'] + " : " + c['Type'], indent=1)
             
             if 'Value' in c:
@@ -170,7 +166,24 @@ class ExpWriter(ExportWriter):
         self._write('sT_INIT:    (* Reset *)\n')
         self._indent = 4;
         self._write('SysMemSet (ADR(' + test.instanceName + '), 0, SIZEOF(' + test.instanceName + '));\n')
-        self._write('testParam(pSteps, SIZEOF(TestVars)/NoOfTests/SIZEOF(Tests_Values[_tlt_,1]));\n')
+
+        sel = False
+        for i, s in enumerate (test.steps):
+            if len(s) < test.maxSteps:
+                if sel:
+                    self._write('ELSIF _tst_ = ' + str(i) + 'THEN\n')
+                else:
+                    self._write('IF _tst_ = ' + str(i) + 'THEN\n')
+                    
+                self._write('testParam(pSteps, '+ str(test.maxSteps) +');\n', self._indent+1)
+                self._indent-=1
+        if sel:
+            self._write('ELSE\n');
+            self._indent+=1
+        self._write('testParam(pSteps, '+ str(test.maxSteps) +');\n')
+        if sel:
+            self._indent-=1
+        
         self._write('\n', indent=0)
         self._write('sT_RUN:    (* test run *)\n', indent=1)
         self._write('ptTestVars := ADR(Tests_Values[_tlt_,_tlp_]);\n')
@@ -178,20 +191,20 @@ class ExpWriter(ExportWriter):
         self._write(test.instanceName + '(\n')
         
         for v in test.typeVar[1]:
-            self._write(test.typeVar[1][v]['Name'] + ' := ptTestVars^.' + test.typeVar[1][v]['Name'] + '\n', indent=5)
+            self._write(v['Name'] + ' := ptTestVars^.' + v['Name'] + '\n', indent=5)
             
         self._write(');\n', indent=5)
         self._write('\n', indent=0)
         
         for v in test.typeVar[2]:
             line = ''
-            if test.typeVar[2][v]['Type'] == 'BOOL':
+            if v['Type'] == 'BOOL':
                 line = 'assertEquals'
             else:
                 line = 'assertEqualsD'
-            line += ' (    Value1 := ' + test.instanceName + '.' + test.typeVar[2][v]['Name'] +',\n'
+            line += ' (    Value1 := ' + test.instanceName + '.' + v['Name'] +',\n'
             self._write(line)
-            self._write('Value2 := ptTestVars^.' + test.typeVar[2][v]['Name'] + ',\n', indent=9)
+            self._write('Value2 := ptTestVars^.' + v['Name'] + ',\n', indent=9)
             line = 'Mode := '
             
 #            if v.mode[0] == '=' or v.mode[0] == 'VFY':           
@@ -222,11 +235,11 @@ class ExpWriter(ExportWriter):
         self._write(typeVar[0]['Name'] + ' : ' + typeVar[0]['Type'] + ';\n')
         self._write('(* Inputs *)\n')
         for v in typeVar[1]:
-            self._write(typeVar[1][v]['Name'] + ' : ' + typeVar[1][v]['Type'] + ';\n')
+            self._write(v['Name'] + ' : ' + v['Type'] + ';\n')
     
         self._write('(* Expected outputs *)\n')
         for v in typeVar[2]:
-            self._write(typeVar[2][v]['Name'] + ' : ' + typeVar[2][v]['Type'] + ';\n')
+            self._write(v['Name'] + ' : ' + v['Type'] + ';\n')
     
         self._indent=0
         self._write("END_STRUCT\n")
@@ -236,8 +249,8 @@ class ExpWriter(ExportWriter):
     def writeTest(self, test):
         
         self._createHeader(test.testName)
-        self._writeConstants(test.constants)
-        self._writeVariables(test.variables)
+        self._writeConstants(test)
+        self._writeVariables(test)
         self._endDeclaration()
         self._createStateMachine(test)
         self._createFooter()

@@ -14,6 +14,7 @@ class Test:
     testName = ''
     fbName = ''
     instanceName = ''
+    maxSteps = 1
     constants = []
     variables = []
     generators = []
@@ -36,17 +37,17 @@ class Test:
         for s in self.steps:
             ArrayVals = { 'Len' : 0, 'Name' : '', 'Value' : '', 'Test': 0}
             wasGenArr = False
-            for t in self.typeVar[1]:
-                for v in self.steps[s]:
-                    if self.steps[s][v][1][t]['Type'].lower() == 'tuple':
+            for i, t in enumerate(self.typeVar[1]): 
+                for v in s:
+                    if t['Type'].lower() == 'tuple':
                         ArrayVals['Value'] = 'rTuple'
                         wasGenArr = True
-                        ArrayVals['Name'] = self.typeVar[1][t]['Name']
-                        ArrayVals['Value'] += ', ' + self.steps[s][v][1][t]['Value']   
+                        ArrayVals['Name'] = t['Name']
+                        ArrayVals['Value'] += ', ' + self.steps[s][v][1][i]['Value']   
                         ArrayVals['Test'] = s
                         ArrayVals['Len']+=3
-                    elif str(self.steps[s][v][1][t]['Value']) != '' and self.steps[s][v][1][t]['Type'].lower() == '' and wasGenArr == True:
-                        ArrayVals['Value'] += ', ' + self.steps[s][v][1][t]['Value']
+                    elif str(v[1][i]['Value']) != '' and v[1][i]['Type'].lower() == '' and wasGenArr == True:
+                        ArrayVals['Value'] += ', ' + v[1][i]['Value']
                         ArrayVals['Len']+=2
                     else:
                         wasGenArr = False                    
@@ -71,33 +72,32 @@ class Test:
 
         # Collector for the parametrized test values
         testvars = []
-        seqlen = 0
         for s in self.steps:
             testvar = []
-            wasFix = [False] * len(self.steps[s][0])
-            for v in self.steps[s]:
+            wasFix = [False] * len(self.typeVar[1])
+            for v in s:
                 #TODO: change to list
-                const = "( " + self.typeVar[0]['Name'] + " := " + str(int(self.steps[s][v][0]))
-                for t in self.typeVar[1]:
-                    if str(self.steps[s][v][1][t]['Value']) != '' and (self.steps[s][v][1][t]['Type'].lower() == 'fix' or self.steps[s][v][1][t]['Type'].lower() == '' and wasFix[t] == True):
-                        const += ", " + self.typeVar[1][t]['Name'] + " := " + str((self.steps[s][v][1][t]['Value']))
-                        wasFix[t] = True
+                const = "( " + self.typeVar[0]['Name'] + " := " + str(int(v[0]))
+                for i, t in enumerate(self.typeVar[1]):
+                    if str(v[1][i]['Value']) != '' and (v[1][i]['Type'].lower() == 'fix' or v[1][i]['Type'].lower() == '' and wasFix[i] == True):
+                        const += ", " + t['Name'] + " := " + str(v[1][i]['Value'])
+                        wasFix[i] = True
                     else:
-                        wasFix[t] = False
+                        wasFix[i] = False
         
-                for t in self.typeVar[2]:
-                    if str(self.steps[s][v][1][t]['Value']) != '':
-                        const += ", " + self.typeVar[2][t]['Name'] + " := " + str(self.steps[s][v][2][t]['Value'])
+                for i, t in enumerate(self.typeVar[2]):
+                    if str(v[1][i]['Value']) != '':
+                        const += ", " + t['Name'] + " := " + str(v[2][i]['Value'])
                 const += " )"
                     
                 testvar.append(const)
     
-            seqlen = max(seqlen, len(testvar))
+            self.maxSteps = max(self.maxSteps, len(testvar))
             testvars.append(testvar)
         
         # Finally, return the constants for test function 
         self.constants.append({ 'Name': "NoOfTests",    'Type': "USINT", 'Value' : len(testvars)})
-        self.constants.append({ 'Name': "NoOfInputs",    'Type': "USINT", 'Value' : seqlen})
+        self.constants.append({ 'Name': "NoOfInputs",    'Type': "USINT", 'Value' : self.maxSteps})
         self.constants.append({ 'Name': "TestVars",    'Type': "ARRAY [1..NoOfTests,1..NoOfInputs] OF Vars" + self.testName, 'Value' : testvars})
         #print constants
     
