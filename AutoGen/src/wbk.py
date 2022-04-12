@@ -12,6 +12,7 @@ email info@florianhofer.it
 
 import xlrd
 import os.path
+from test import Test
 
 class Workbook:
     
@@ -149,3 +150,15 @@ class Workbook:
             self._scanPos+=1 # skip empty line
         
         return sequences
+    
+    def readTest(self):
+        
+        test = Test(self.testName, self.instanceName, self.fbName)
+        # found header, scan for labels.
+        varTypes = self.getFunctionVars()
+        # build step dictionary
+        test.sequences = self.readSequences(varTypes)
+        # parse data and prepare test structure
+        test.parseData(varTypes)
+        
+        return test
