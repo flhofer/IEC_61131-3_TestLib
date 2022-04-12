@@ -36,11 +36,11 @@ def main(argv):
 
 		test = Test(wbk.testName, wbk.instanceName, wbk.fbName)
 		# found header, scan for labels.
-		test.varTypes = wbk.getFunctionVars()
+		varTypes = wbk.getFunctionVars()
 		# build step dictionary
-		test.sequences = wbk.readSequences(test.varTypes)
+		test.sequences = wbk.readSequences(varTypes)
 		# parse data and prepare test structure
-		test.parseData()
+		test.parseData(varTypes)
 		
 		testFile.writeTest(test)
 			

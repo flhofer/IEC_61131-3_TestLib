@@ -10,6 +10,7 @@ email info@florianhofer.it
 -----------------------------------------------------------
 '''
 
+#TODO: mutate to data object/class
 class Test:
     """Test object that contains information on a test POU""" 
 
@@ -20,8 +21,6 @@ class Test:
     constants = []
     variables = []
     generators = []
-    
-    # From workbook -> may be removed in future
     varTypes = {}
     sequences = {}
     
@@ -30,7 +29,7 @@ class Test:
         self.testName = testName 
         self.instanceName = instanceName
         self.fbName = fbName
-    
+        
     def _generateVars(self):
         """Generate -required- variable list to add to the test POU"""
 
@@ -84,12 +83,15 @@ class Test:
                     if str(varValues[1][i]['Value']) != '' and (varValues[1][i]['Mode'].lower() == 'fix' or varValues[1][i]['Mode'].lower() == '' and wasFix[i] == True):
                         const += ", " + varType['Name'] + " := " + str(varValues[1][i]['Value'])
                         wasFix[i] = True
+                        varType['Mode'] = 'fix' # TODO just temporary
                     else:
+                        varType['Mode'] = varValues[1][i]['Mode']
                         wasFix[i] = False
         
                 for i, varType in enumerate(self.varTypes[2]):
-                    if str(varValues[1][i]['Value']) != '':
+                    if str(varValues[2][i]['Value']) != '':
                         const += ", " + varType['Name'] + " := " + str(varValues[2][i]['Value'])
+                        varType['Mode'] = varValues[2][i]['Type']
                 const += " )"
                     
                 testvar.append(const)
@@ -103,18 +105,19 @@ class Test:
         self.constants.append({ 'Name': "TestVars",    'Type': "ARRAY [1..NoOfTests,1..NoOfInputs] OF Vars" + self.testName, 'Value' : testvars})
         #print constants
     
-        return self.constants
-        # fix len sequences to len array    
+        return self.constants  
         
     def _updateStates(self):
         pass    
     
-    def parseData(self):
+    def parseData(self, varTypes):
         """Parses variables and sequence code to generate additional sequences from preset"""
+
+        self.varTypes = varTypes.copy()
         self._generateConst()
         self._generateVars()
         
         self._updateStates()
-        pass
+     
     
     

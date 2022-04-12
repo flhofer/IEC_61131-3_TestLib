@@ -225,13 +225,13 @@ class ExpWriter(ExportWriter):
             self._write('Value2 := ptTestVars^.' + varType['Name'] + ',\n', indent=8)
             line = 'Mode := '
             
-            '''
-            if varType['Mode'] == '=' or varType['Mode'] == 'VFY': '''           
-            line += 'mVFY' 
-            '''
-            elif varType['Mode'][0] == 'BFRNG':
+            #TODO: structure not defiend yet
+            #if varType['Type'] == '=' or varType['Type'] == 'VFY': 
+            if varType['Type'] == 'BFRNG':
                 line += 'mBFRNG + '
-                line += str(varType.mode[1])'''
+                line += str(varType.mode[1])
+            else:
+                line += 'mVFY' 
             line += ', Delay := ptTestVars^.testTime);\n\n'
             self._write(line, indent=8)
         
