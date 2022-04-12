@@ -13,19 +13,19 @@ import os.path
 
 class Workbook:
     
-    def __readBaseParams(self):
+    def _readBaseParams(self):
         """Read header info and reset counters"""
         
-        #Header information
-        self.testName = self.sh.cell(0,1).value
-        self.fbName = self.sh.cell(0,4).value
-        self.instanceName = self.sh.cell(0,6).value
+        #Header information 
+        self.testName = self.sheet.cell(0,1).value #TODO: fix Hard coded!
+        self.fbName = self.sheet.cell(0,4).value
+        self.instanceName = self.sheet.cell(0,6).value
 
         self.scanPos = 0
         
         # Find beginning of declaration tables
         while True:
-            state = self.sh.cell(self.scanPos,0).value
+            state = self.sheet.cell(self.scanPos,0).value
         
             if state != "State":
                 self.scanPos += 1
@@ -53,47 +53,48 @@ class Workbook:
         self.sheetno+=1
         if self.wb.nsheets <= self.sheetno:
             raise StopIteration
-        self.sh = self.wb.sheet_by_index(self.sheetno)
-        self.__readBaseParams()
+        self.sheet = self.wb.sheet_by_index(self.sheetno)
+        self._readBaseParams()
         return self
     
     def getFunctionVars(self):
         """Collect the names and types of I/O vaiables in tables"""
         
-        # read actual line, column 2 on
-        columns = self.sh.row_values(self.scanPos, 2)
+        testTime = {"Name" : self.sheet.cell(self.scanPos,1).value, "Type": "DWORD"}
+
+        # read actual line, field 2 on
+        columns = self.sheet.row_values(self.scanPos, 2)
         
         inputs = []
         outputs= []
-        outtoin = False
-        coliter = iter(columns)
-        for col in coliter:
-            if col != None :
-                if not col == "#":
-                    var = {"Name" : col}
+        outToIn = False
+        coliterator = iter(columns)
+        for field in coliterator:
+            if field != None :
+                if not field == "#":
+                    newVar = {"Name" : field}
                     try: 
-                        col = next(coliter)
+                        field = next(coliterator)
                     except:
                         print ("end of line!!")
                         
-                    if col != None:
-                        var["Type"] = col
+                    if field != None:
+                        newVar["Type"] = field
                     
-                    if not outtoin :
-                        outputs.append(var.copy())
+                    if not outToIn :
+                        outputs.append(newVar.copy())
                     else:
-                        inputs.append(var.copy())
-                    var.clear()
+                        inputs.append(newVar.copy())
+                    newVar.clear()
                 else:
-                    if outtoin:
+                    if outToIn:
                         break
-                    outtoin = True
+                    outToIn = True
         
-        testTime = {"Name" : "testtime", "Type": "DWORD"}
         self.scanPos += 1 # next line, start to scan
         return [testTime, inputs, outputs]    
     
-    def scanLine(self, columns, typeDef):
+    def _scanLine(self, columns, typeDef):
         """Read a variable line and create time and I/O value list"""
         
         inputs = []
@@ -103,14 +104,14 @@ class Workbook:
         testTime = columns[0]
         
         i = 1
-        for ntype in typeDef[2]:
+        for _ in typeDef[2]:
             var = {"Value": columns[i], "Type": columns[i+1]}
             outputs.append(var.copy())
             var.clear()
             i+= 2
         
         i+=1 # skip the line with hash
-        for ntype in typeDef[1]:
+        for _ in typeDef[1]:
             var = {"Value": columns[i], "Type": columns[i+1]}
             inputs.append(var.copy())
             var.clear()
@@ -118,34 +119,31 @@ class Workbook:
             
         return [testTime, inputs, outputs]    
         
-    def readSequence(self, typeDef):
+    def _readSequence(self, typeDef):
         """Read a test sequence in spreadsheet, group them into a value set"""
         
         sequence = []
-        cnt = 0
-        while (self.sh.nrows > self.scanPos):
-            if (self.sh.cell(self.scanPos,1).value == ''):
+        while (self.sheet.nrows > self.scanPos):
+            if (self.sheet.cell(self.scanPos,1).value == ''):
                 break
-            sequence.append(self.scanLine(self.sh.row_values(self.scanPos,1), typeDef))
-            print ("New input found = " + str(sequence[cnt]))
+            newLine = self._scanLine(self.sheet.row_values(self.scanPos,1), typeDef)
+            sequence.append(newLine)
+            print ("New input found = " + str(newLine))
             self.scanPos += 1
-            cnt += 1
             
         return sequence
 
     def readSequences(self, typeDef):
         """Read all sequences in a test configuration sheet"""
         
-        cnt = 0
-        steps = []
+        sequences = []
         
-        while (self.sh.nrows > self.scanPos):
-            print ("Sequence ", cnt)
-            steps.append(self.readSequence(typeDef))
-            if steps[cnt] == []:
-                del steps[cnt]
-            else:
-                cnt+=1
+        while (self.sheet.nrows > self.scanPos):
+            newSequence = self._readSequence(typeDef)
+            if newSequence != []:
+                sequences.append(newSequence)
+                print ("Sequence ", len(sequences))
+                
             self.scanPos+=1 # skip empty line
         
-        return steps
+        return sequences
