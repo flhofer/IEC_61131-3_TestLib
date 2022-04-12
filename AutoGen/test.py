@@ -20,8 +20,8 @@ class Test:
     generators = []
     
     # From workbook -> may be removed in future
-    typeVar = {}
-    steps = {}
+    varTypes = {}
+    sequences = {}
     
     def __init__(self, testName = 'DummyTest', instanceName = 'TestInst', fbName=''):
         """Intialise new test object"""
@@ -34,34 +34,34 @@ class Test:
 
         self.generators = []
         # Collector for the parametrized test values
-        for s in self.steps:
-            ArrayVals = { 'Len' : 0, 'Name' : '', 'Value' : '', 'Test': 0}
+        for sequence in self.sequences:
+            generator = { 'Len' : 0, 'Name' : '', 'Value' : '', 'Test': 0}
             wasGenArr = False
-            for i, t in enumerate(self.typeVar[1]): 
-                for v in s:
-                    if t['Type'].lower() == 'tuple':
-                        ArrayVals['Value'] = 'rTuple'
+            for i, varType in enumerate(self.varTypes[1]): 
+                for varValues in sequence:
+                    if varValues[1][i]['Type'].lower() == 'tuple':
+                        generator['Value'] = 'rTuple'
                         wasGenArr = True
-                        ArrayVals['Name'] = t['Name']
-                        ArrayVals['Value'] += ', ' + self.steps[s][v][1][i]['Value']   
-                        ArrayVals['Test'] = s
-                        ArrayVals['Len']+=3
-                    elif str(v[1][i]['Value']) != '' and v[1][i]['Type'].lower() == '' and wasGenArr == True:
-                        ArrayVals['Value'] += ', ' + v[1][i]['Value']
-                        ArrayVals['Len']+=2
+                        generator['Name'] = varType['Name']
+                        generator['Value'] += ', ' + varValues[1][i]['Value']   
+                        generator['Test'] = sequence
+                        generator['Len']+=3
+                    elif str(varValues[1][i]['Value']) != '' and varValues[1][i]['Type'].lower() == '' and wasGenArr == True:
+                        generator['Value'] += ', ' + varValues[1][i]['Value']
+                        generator['Len']+=2
                     else:
                         wasGenArr = False                    
             
-            if ArrayVals['Len'] > 0:
-                self.generators.append(ArrayVals)
+            if generator['Len'] > 0:
+                self.generators.append(generator)
 
         self.variables.append({ 'Name': 'ptrVars', 'Type': 'POINTER TO ' + self.testName + '_vars'})
         self.variables.append({ 'Name': 'i', 'Type': 'INT', 'Value' : "1"})
         if self.fbName != '':
             self.variables.append({ 'Name': self.instanceName,    'Type': self.fbName})
     
-        for i, g in enumerate(self.generators):
-            self.variables.append({ 'Name': 'Array' + str(i+1), 'Type': 'ARRAY[1..' + str(g['Len']) +'] OF REAL', 'Value' : g['Value']})
+        for i, generator in enumerate(self.generators):
+            self.variables.append({ 'Name': 'Array' + str(i+1), 'Type': 'ARRAY[1..' + str(generator['Len']) +'] OF REAL', 'Value' : generator['Value']})
 
         return self.variables
 
@@ -72,22 +72,22 @@ class Test:
 
         # Collector for the parametrized test values
         testvars = []
-        for s in self.steps:
+        for sequence in self.sequences:
             testvar = []
-            wasFix = [False] * len(self.typeVar[1])
-            for v in s:
+            wasFix = [False] * len(self.varTypes[1])
+            for varValues in sequence:
                 #TODO: change to list
-                const = "( " + self.typeVar[0]['Name'] + " := " + str(int(v[0]))
-                for i, t in enumerate(self.typeVar[1]):
-                    if str(v[1][i]['Value']) != '' and (v[1][i]['Type'].lower() == 'fix' or v[1][i]['Type'].lower() == '' and wasFix[i] == True):
-                        const += ", " + t['Name'] + " := " + str(v[1][i]['Value'])
+                const = "( " + self.varTypes[0]['Name'] + " := " + str(int(varValues[0]))
+                for i, varType in enumerate(self.varTypes[1]):
+                    if str(varValues[1][i]['Value']) != '' and (varValues[1][i]['Type'].lower() == 'fix' or varValues[1][i]['Type'].lower() == '' and wasFix[i] == True):
+                        const += ", " + varType['Name'] + " := " + str(varValues[1][i]['Value'])
                         wasFix[i] = True
                     else:
                         wasFix[i] = False
         
-                for i, t in enumerate(self.typeVar[2]):
-                    if str(v[1][i]['Value']) != '':
-                        const += ", " + t['Name'] + " := " + str(v[2][i]['Value'])
+                for i, varType in enumerate(self.varTypes[2]):
+                    if str(varValues[1][i]['Value']) != '':
+                        const += ", " + varType['Name'] + " := " + str(varValues[2][i]['Value'])
                 const += " )"
                     
                 testvar.append(const)
@@ -102,13 +102,13 @@ class Test:
         #print constants
     
         return self.constants
-        # fix len steps to len array    
+        # fix len sequences to len array    
         
     def _updateStates(self):
         pass    
     
     def parseData(self):
-        """Parses variables and sequence code to generate additional steps from preset"""
+        """Parses variables and sequence code to generate additional sequences from preset"""
         self._generateConst()
         self._generateVars()
         

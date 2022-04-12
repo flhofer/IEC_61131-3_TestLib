@@ -32,7 +32,7 @@ class ExportWriter:
         if -1 == indent:    # no parameter, write with instance _indent 
             indent = self._indent
         
-        for i in range(0, indent, 1):
+        for _ in range(0, indent, 1):
             self.testFile.write("    ")
             
         self.testFile.write(text)
@@ -78,10 +78,10 @@ class ExpWriter(ExportWriter):
         
         self._indent+=1
 
-        for c in test.constants:
-            text = c['Name'] + " : " + c['Type'] + " := "
-            if type(c['Value']) != list:
-                self._write(text + str(c['Value']) + ";\n")
+        for constant in test.constants:
+            text = constant['Name'] + " : " + constant['Type'] + " := "
+            if type(constant['Value']) != list:
+                self._write(text + str(constant['Value']) + ";\n")
             else:
                 # constant is a list
                 self._write(text+"\n")
@@ -89,27 +89,28 @@ class ExpWriter(ExportWriter):
                 text = ''
                 i = 0
                 
-                for i, v in enumerate(c['Value']):
+                for i, value in enumerate(constant['Value']):
                     if i:  
                         self._write(text+',\n')
                         text = ''
-                    if type(v) != list: # char array, actually
-                        text += v
+                    if type(value) != list: # char array, actually
+                        text += value
                     else:
                         # constant is a list of lists
-                        if c['Name'] == 'TestVars':
+                        if constant['Name'] == 'TestVars':
                             self._write('\n')
                             self._write("(* Test case " + str(i+1) + " *)\n")
                         
-                        for j, w in enumerate(v):
+                        for j, valueItem in enumerate(value):
                             if j: 
                                 self._write(text+',\n')
                                 text = ''
-                            text += w
+                            text += valueItem
                         
-                        if test.maxSteps-len(v) > 0:
+                        if test.maxSteps-len(value) > 0:
                             self._write(text+',\n')
-                            text = (str(test.maxSteps-len(v)) + "( testtime :=  0 )")
+                            #TODO: use time variable name
+                            text = (str(test.maxSteps-len(value)) + "( testtime :=  0 )")
                             
                 self._write(text+';\n')
                 self._indent-=1
@@ -130,25 +131,25 @@ class ExpWriter(ExportWriter):
         self._write("VAR\n")
         self._indent=2
 
-        for c in test.variables:
-            self._write(c['Name'] + " : " + c['Type'], indent=1)
+        for variable in test.variables:
+            self._write(variable['Name'] + " : " + variable['Type'], indent=1)
             
-            if 'Value' in c:
+            if 'Value' in variable:
                 self._write(" := ", indent=0);
-                if type(c['Value']) != list:
-                    self._write(str(c['Value']), indent=0)
+                if type(variable['Value']) != list:
+                    self._write(str(variable['Value']), indent=0)
                 else:
                     i = 0
                     self._write('\n',indent=0)
-                    for v in c['Value']:
+                    for value in variable['Value']:
                         i+=1
                         self._write("(* Test case" + str(i) + "*)")
                         
                         end = False
-                        for w in v:
+                        for valueItem in value:
                             if end:
                                 self._write(",\n",indent=0)
-                            self._write(w)
+                            self._write(valueItem)
                             end = True
                         
             self._write(";\n", indent=0)
@@ -168,8 +169,8 @@ class ExpWriter(ExportWriter):
         self._write('SysMemSet (ADR(' + test.instanceName + '), 0, SIZEOF(' + test.instanceName + '));\n')
 
         sel = False
-        for i, s in enumerate (test.steps):
-            if len(s) < test.maxSteps:
+        for i, sequence in enumerate (test.sequences):
+            if len(sequence) < test.maxSteps:
                 if sel:
                     self._write('ELSIF _tst_ = ' + str(i) + 'THEN\n')
                 else:
@@ -190,35 +191,35 @@ class ExpWriter(ExportWriter):
         
         self._write(test.instanceName + '(\n')
         
-        for v in test.typeVar[1]:
-            self._write(v['Name'] + ' := ptTestVars^.' + v['Name'] + '\n', indent=5)
+        for varType in test.varTypes[1]:
+            self._write(varType['Name'] + ' := ptTestVars^.' + varType['Name'] + '\n', indent=5)
             
         self._write(');\n', indent=5)
         self._write('\n', indent=0)
         
-        for v in test.typeVar[2]:
+        for varType in test.varTypes[2]:
             line = ''
-            if v['Type'] == 'BOOL':
+            if varType['Type'] == 'BOOL':
                 line = 'assertEquals'
             else:
                 line = 'assertEqualsD'
-            line += ' (    Value1 := ' + test.instanceName + '.' + v['Name'] +',\n'
+            line += ' (    Value1 := ' + test.instanceName + '.' + varType['Name'] +',\n'
             self._write(line)
-            self._write('Value2 := ptTestVars^.' + v['Name'] + ',\n', indent=9)
+            self._write('Value2 := ptTestVars^.' + varType['Name'] + ',\n', indent=9)
             line = 'Mode := '
             
-#            if v.mode[0] == '=' or v.mode[0] == 'VFY':           
+#            if varType.mode[0] == '=' or varType.mode[0] == 'VFY':           
             line += 'mVFY'
-#            elif v.mode[0] == 'BFRNG':
+#            elif varType.mode[0] == 'BFRNG':
 #                line += 'mBFRNG, '
-#                line += str(v.mode[1])
+#                line += str(varType.mode[1])
             line += ', Delay := ptTestVars^.testTime);\n\n'
             self._write(line, indent=9)
         
         self._write('sTC_PASS: Pass := TRUE;\n    END_CASE\n', indent=1)
         self._indent=0
         
-    def _createTestDUT(self, typeVar, testName):
+    def _createTestDUT(self, varTypes, testName):
         """Create test variable data type for the test parameter table"""
         
         print ("Writing data type used for the test to file..")
@@ -232,14 +233,14 @@ class ExpWriter(ExportWriter):
         
         self._indent=1
         
-        self._write(typeVar[0]['Name'] + ' : ' + typeVar[0]['Type'] + ';\n')
+        self._write(varTypes[0]['Name'] + ' : ' + varTypes[0]['Type'] + ';\n')
         self._write('(* Inputs *)\n')
-        for v in typeVar[1]:
-            self._write(v['Name'] + ' : ' + v['Type'] + ';\n')
+        for varType in varTypes[1]:
+            self._write(varType['Name'] + ' : ' + varType['Type'] + ';\n')
     
         self._write('(* Expected outputs *)\n')
-        for v in typeVar[2]:
-            self._write(v['Name'] + ' : ' + v['Type'] + ';\n')
+        for varType in varTypes[2]:
+            self._write(varType['Name'] + ' : ' + varType['Type'] + ';\n')
     
         self._indent=0
         self._write("END_STRUCT\n")
@@ -254,7 +255,7 @@ class ExpWriter(ExportWriter):
         self._endDeclaration()
         self._createStateMachine(test)
         self._createFooter()
-        self._createTestDUT(test.typeVar, test.testName)
+        self._createTestDUT(test.varTypes, test.testName)
       
 class XmlWriter(ExportWriter):
     """XML style export writer"""

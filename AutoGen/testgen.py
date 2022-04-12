@@ -33,9 +33,9 @@ def main(argv):
 
 		test = Test(wbk.testName, wbk.instanceName, wbk.fbName)
 		# found header, scan for labels.
-		test.typeVar = wbk.getFunctionVars()
+		test.varTypes = wbk.getFunctionVars()
 		# build step dictionary
-		test.steps = wbk.readSequences(test.typeVar)
+		test.sequences = wbk.readSequences(test.varTypes)
 		# parse data and prepare test structure
 		test.parseData()
 		

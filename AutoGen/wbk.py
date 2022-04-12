@@ -17,18 +17,18 @@ class Workbook:
         """Read header info and reset counters"""
         
         #Header information 
-        self.testName = self.sheet.cell(0,1).value #TODO: fix Hard coded!
-        self.fbName = self.sheet.cell(0,4).value
-        self.instanceName = self.sheet.cell(0,6).value
+        self.testName = self._sheet.cell(0,1).value #TODO: fix Hard coded!
+        self.fbName = self._sheet.cell(0,4).value
+        self.instanceName = self._sheet.cell(0,6).value
 
-        self.scanPos = 0
+        self._scanPos = 0
         
         # Find beginning of declaration tables
         while True:
-            state = self.sheet.cell(self.scanPos,0).value
+            state = self._sheet.cell(self._scanPos,0).value
         
             if state != "State":
-                self.scanPos += 1
+                self._scanPos += 1
             else:
                 break    
     
@@ -36,34 +36,34 @@ class Workbook:
         """Create new instance, open bookfile and start reading info"""
 
         try:
-            self.wb = xlrd.open_workbook(os.path.join('', bookfile))
+            self._workBook = xlrd.open_workbook(os.path.join('', bookfile))
         except:
             print ("Unable to open file ' + fileName + ' for write")
             raise
         
-        print (self.wb.sheet_names())
-        self.sheetno = -1
+        print (self._workBook.sheet_names())
+        self._sheetNo = -1
             
     def __iter__(self):
         """Implement the iterator interface"""
         return self
 
     def __next__(self):
-        """Iterate to next sheet"""
-        self.sheetno+=1
-        if self.wb.nsheets <= self.sheetno:
+        """Iterate to next _sheet"""
+        self._sheetNo+=1
+        if self._workBook.nsheets <= self._sheetNo:
             raise StopIteration
-        self.sheet = self.wb.sheet_by_index(self.sheetno)
+        self._sheet = self._workBook.sheet_by_index(self._sheetNo)
         self._readBaseParams()
         return self
     
     def getFunctionVars(self):
         """Collect the names and types of I/O vaiables in tables"""
         
-        testTime = {"Name" : self.sheet.cell(self.scanPos,1).value, "Type": "DWORD"}
+        testTime = {"Name" : self._sheet.cell(self._scanPos,1).value, "Type": "DWORD"}
 
         # read actual line, field 2 on
-        columns = self.sheet.row_values(self.scanPos, 2)
+        columns = self._sheet.row_values(self._scanPos, 2)
         
         inputs = []
         outputs= []
@@ -91,7 +91,7 @@ class Workbook:
                         break
                     outToIn = True
         
-        self.scanPos += 1 # next line, start to scan
+        self._scanPos += 1 # next line, start to scan
         return [testTime, inputs, outputs]    
     
     def _scanLine(self, columns, typeDef):
@@ -105,45 +105,45 @@ class Workbook:
         
         i = 1
         for _ in typeDef[2]:
-            var = {"Value": columns[i], "Type": columns[i+1]}
-            outputs.append(var.copy())
-            var.clear()
+            varValue = {"Value": columns[i], "Type": columns[i+1]}
+            outputs.append(varValue.copy())
+            varValue.clear()
             i+= 2
         
         i+=1 # skip the line with hash
         for _ in typeDef[1]:
-            var = {"Value": columns[i], "Type": columns[i+1]}
-            inputs.append(var.copy())
-            var.clear()
+            varValue = {"Value": columns[i], "Type": columns[i+1]}
+            inputs.append(varValue.copy())
+            varValue.clear()
             i+= 2
             
         return [testTime, inputs, outputs]    
         
-    def _readSequence(self, typeDef):
+    def _readRunSequence(self, typeDef):
         """Read a test sequence in spreadsheet, group them into a value set"""
         
         sequence = []
-        while (self.sheet.nrows > self.scanPos):
-            if (self.sheet.cell(self.scanPos,1).value == ''):
+        while (self._sheet.nrows > self._scanPos):
+            if (self._sheet.cell(self._scanPos,1).value == ''):
                 break
-            newLine = self._scanLine(self.sheet.row_values(self.scanPos,1), typeDef)
+            newLine = self._scanLine(self._sheet.row_values(self._scanPos,1), typeDef)
             sequence.append(newLine)
             print ("New input found = " + str(newLine))
-            self.scanPos += 1
+            self._scanPos += 1
             
         return sequence
 
     def readSequences(self, typeDef):
-        """Read all sequences in a test configuration sheet"""
+        """Read all sequences in a test configuration _sheet"""
         
         sequences = []
         
-        while (self.sheet.nrows > self.scanPos):
-            newSequence = self._readSequence(typeDef)
+        while (self._sheet.nrows > self._scanPos):
+            newSequence = self._readRunSequence(typeDef)
             if newSequence != []:
                 sequences.append(newSequence)
                 print ("Sequence ", len(sequences))
                 
-            self.scanPos+=1 # skip empty line
+            self._scanPos+=1 # skip empty line
         
         return sequences
