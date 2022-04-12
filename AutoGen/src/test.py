@@ -23,7 +23,7 @@ class Test:
 
     ''' Test data storage '''
     varDefs = { TEST_TIME: {},  TEST_OUTPUT: [], TEST_INPUT : [] }
-    initSequences = []  # TODO: for now only single Init
+    stateCode = []  # TODO: for now only single Init
     runSequences = []
 
     ''' Parsing results '''
@@ -52,6 +52,10 @@ class Test:
     def appendRunSequence(self, sequence):
         """ adds a Run-state Sequence to the list """
         self.runSequences.append(sequence)
+        
+    def appendStateCode(self, state, codeLines):
+        """ appends to the registry of code to insert to a State """
+        self.stateCode.append({ CODE_STATE: state, CODE_CODE : codeLines })
         
     def _generateVars(self):
         """Generate -required- variable list to add to the test POU"""

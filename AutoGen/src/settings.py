@@ -22,6 +22,22 @@ VAR_VALUE = 'Value'
 VAR_TYPE = 'Type'
 VAR_TEST = 'Test'
 VAR_MODE = 'Mode'
+CODE_LINE = 'Line'
+CODE_STATE = 'State'
+CODE_CODE = 'Code'
 
 ''' Constants for Test's internal use ''' 
 MODES = { 'VFY' : 'mVFY', 'AT': 'mAT', 'BFRNG': 'mBFRNG', 'ATRNG': 'mATRNG', 'AFRNG' : 'mAFRNG'}
+
+STATES = { 
+    # Test Case preparation 
+    'Case Init' : 'sTC_INIT', 'Case Wait' : 'sTC_WAIT', 'Case Start' : 'sTC_START', 'Case Run' : 'sTC_RUN',   
+    # Test execution 
+    #'sTC_ND', 
+    'Init' : 'sT_INIT', 'Wait' : 'sT_WAIT', 'Start' : 'sT_START', 'Run' :  'sT_RUN', 'Abort' : 'sT_ABORT', 
+    'Stop' : 'sT_STOP', 'End' : 'sT_END', 'Deinit' : 'sT_DEINIT', 'Pass' :  'sT_PASS', 'Fail' : 'sT_FAIL',
+    'Error' : 'sT_ERROR',
+    #Test case ending
+    'Case Abort' : 'sTC_ABORT', 'Case Stop' : 'sTC_STOP', 'Case End' : 'sTC_END', 'Case Deinit' : 'sTC_DEINIT',
+    'Case Pass' : 'sTC_PASS', 'Case Fail' : 'sTC_FAIL', 'Case Error' : 'sTC_ERROR'
+    }

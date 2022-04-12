@@ -203,6 +203,14 @@ class ExpWriter(ExportWriter):
             if selSteps:
                 self._indent-=1
         
+        #TODO: dump for codes of other states, change to STATE-Iterator -> call every state with if
+        for stateCode in test.stateCode:
+            if stateCode[CODE_STATE] == STATES['Init']:
+                for line in stateCode[CODE_CODE]:
+                    if line[TEST_TIME] != 0:
+                        self._write('testParam(pWait, ' + str(line[TEST_TIME])+ ');\n')
+                    self._write(line[CODE_LINE] + '\n')
+                    
         self._write('\n', indent=0)
         
         ''' RUN STATE ''' 

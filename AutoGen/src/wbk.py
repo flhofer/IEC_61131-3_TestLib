@@ -133,17 +133,36 @@ class Workbook:
             
         return sequence
 
+    def _readStateCode(self):
+        """ Read the code for a sequence in the spreadsheet """
+        
+        sequence = []
+        while (self._sheet.nrows > self._scanPos):
+            if (self._sheet.cell(self._scanPos,2).value == ''):
+                break
+            newLine = { TEST_TIME : 0, CODE_LINE: self._sheet.cell(self._scanPos,2).value}
+            testtime = self._sheet.cell(self._scanPos,1).value
+            if testtime != '': 
+                newLine[TEST_TIME] = int(testtime)
+            sequence.append(newLine)
+            print ("New input found = " + str(newLine))
+            self._scanPos += 1
+        return sequence
+
     def readSequences(self, test):
         """Read all sequences in a test configuration _sheet"""
                
         while (self._sheet.nrows > self._scanPos):
-            seqID = self._sheet.cell(self._scanPos,0).value
+            seqID = self._sheet.cell(self._scanPos,0).value.strip()
 
             # Run sequence?
-            if seqID == 'Run':
-                newSequence = self._readRunSequence(test.varDefs)
-                if newSequence != []:
-                    test.appendRunSequence(newSequence)
+            if seqID in STATES:
+                if seqID == 'Run':
+                    newSequence = self._readRunSequence(test.varDefs)
+                    if newSequence != []:
+                        test.appendRunSequence(newSequence)
+                else:
+                    test.appendStateCode(STATES[seqID], self._readStateCode())
                 
             self._scanPos+=1 # skip empty line
             
