@@ -1,12 +1,14 @@
-# -----------------------------------------------------------
-# Test Generator for the IEC61131-3 Test library - EXP module
-#
-# Created May, 26, 2017
-#
-# (C) 2017-2020 Hofer Florian, Bolzano, ITALY
-# Released under GNU Public License (GPL)
-# email info@florianhofer.it
-# -----------------------------------------------------------
+'''
+-----------------------------------------------------------
+Test Generator for the IEC61131-3 Test library - EXP module
+
+Created May, 26, 2017
+
+(C) 2017-2020 Hofer Florian, Bolzano, ITALY
+Released under GNU Public License (GPL)
+email info@florianhofer.it
+-----------------------------------------------------------
+'''
 
 from builtins import list
 from settings import TEST_NAME_MAX

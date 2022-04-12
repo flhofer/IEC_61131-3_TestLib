@@ -1,12 +1,15 @@
 #!/usr/bin/python
 
-# -----------------------------------------------------------
-# Test Generator for the IEC61131-3 Test library
-#
-# (C) 2017-2020 Hofer Florian, Bolzano, ITALY
-# Released under GNU Public License (GPL)
-# email info@florianhofer.it
-# -----------------------------------------------------------
+'''
+-----------------------------------------------------------
+Test Generator for the IEC61131-3 Test library
+
+(C) 2017-2020 Hofer Florian, Bolzano, ITALY
+
+Released under GNU Public License (GPL)
+email info@florianhofer.it
+-----------------------------------------------------------
+'''
 
 from exp import ExpWriter
 from wbk import Workbook

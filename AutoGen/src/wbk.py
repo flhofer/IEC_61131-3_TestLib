@@ -1,12 +1,14 @@
-# -----------------------------------------------------------
-# Test Generator for the IEC61131-3 Test library - Workbook module
-#
-# Created May, 30, 2017
-#
-# (C) 2017-2020 Hofer Florian, Bolzano, ITALY
-# Released under GNU Public License (GPL)
-# email info@florianhofer.it
-# -----------------------------------------------------------
+'''
+-----------------------------------------------------------
+Test Generator for the IEC61131-3 Test library - Workbook module
+
+Created May, 30, 2017
+
+(C) 2017-2020 Hofer Florian, Bolzano, ITALY
+Released under GNU Public License (GPL)
+email info@florianhofer.it
+-----------------------------------------------------------
+'''
 
 import xlrd
 import os.path
