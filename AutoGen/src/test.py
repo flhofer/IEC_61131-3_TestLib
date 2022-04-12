@@ -108,13 +108,15 @@ class Test:
                         wasFix[i] = True
                         varType[VAR_MODE] = 'fix' # TODO just temporary
                     else:
-                        varType[VAR_MODE] = varValues[TEST_INPUT][i][VAR_MODE]
+                        if varValues[TEST_INPUT][i][VAR_MODE] != '':
+                            varType[VAR_MODE] = varValues[TEST_INPUT][i][VAR_MODE] 
                         wasFix[i] = False
         
                 for i, varType in enumerate(self.varDefs[TEST_OUTPUT]):
                     if str(varValues[TEST_OUTPUT][i][VAR_VALUE]) != '':
                         const += ", " + varType[VAR_NAME] + " := " + str(varValues[TEST_OUTPUT][i][VAR_VALUE])
-                        varType[VAR_TEST] = varValues[TEST_OUTPUT][i][VAR_TEST]
+                        if varValues[TEST_OUTPUT][i][VAR_TEST] != '':
+                            varType[VAR_TEST] = varValues[TEST_OUTPUT][i][VAR_TEST]
                 const += " )"
                     
                 testvar.append(const)
