@@ -24,3 +24,4 @@ VAR_TEST = 'Test'
 VAR_MODE = 'Mode'
 
 ''' Constants for Test's internal use ''' 
+MODES = { 'VFY' : 'mVFY', 'AT': 'mAT', 'BFRNG': 'mBFRNG', 'ATRNG': 'mATRNG', 'AFRNG' : 'mAFRNG'}

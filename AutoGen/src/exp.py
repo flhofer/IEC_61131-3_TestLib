@@ -231,9 +231,12 @@ class ExpWriter(ExportWriter):
             self._write('Value2 := ptTestVars^.' + varType[VAR_NAME] + ',\n', indent=8)
             line = 'Mode := '
             
-            if varType[VAR_TEST][:len('BFRNG')] == 'BFRNG':
-                line += 'mBFRNG + '
-                line += varType[VAR_TEST].split(",")[1]
+            varMode = varType[VAR_TEST].split(",")
+            if varMode[0] in MODES:
+                
+                line += varMode[0]
+                if len(varMode) > 1:
+                    line += ' + ' + varMode[1]
             else:
                 line += 'mVFY' 
             line += ', Delay := ptTestVars^.testTime);\n\n'
