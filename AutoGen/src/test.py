@@ -9,6 +9,7 @@ Released under GNU Public License (GPL)
 email info@florianhofer.it
 -----------------------------------------------------------
 '''
+from setuptools.dist import sequence
 
 #TODO: mutate to data object/class
 class Test:
@@ -18,37 +19,58 @@ class Test:
     fbName = ''
     instanceName = ''
     maxSteps = 1
+
+    ''' Test data storage '''
+    varDefs = { 'Time': {},  'Output': [], 'Input' : [] }
+    initSequences = []  # TODO: for now only single Init
+    runSequences = []
+
+    ''' Parsing results '''
     constants = []
     variables = []
     generators = []
-    varTypes = {}
-    sequences = {}
-    
+        
     def __init__(self, testName = 'DummyTest', instanceName = 'TestInst', fbName=''):
         """Intialise new test object"""
         self.testName = testName 
         self.instanceName = instanceName
         self.fbName = fbName
+    
+    def appendOutputType(self, varDesc ):
+        """ Add a output variable to variable descriptors """
+        self.varDefs['Output'].append(varDesc)
+        
+    def appendInputType(self, varDesc ):
+        """ Add a input variable to variable descriptors """
+        self.varDefs['Input'].append(varDesc)
+    
+    def setTimeType(self, timeDesc):
+        """ Set the time base for the test """
+        self.varDefs['Time'] = timeDesc
+
+    def appendRunSequence(self, sequence):
+        """ adds a Run-state Sequence to the list """
+        self.runSequences.append(sequence)
         
     def _generateVars(self):
         """Generate -required- variable list to add to the test POU"""
 
         self.generators = []
         # Collector for the parametrized test values
-        for sequence in self.sequences:
+        for sequence in self.runSequences:
             generator = { 'Len' : 0, 'Name' : '', 'Value' : '', 'Test': 0}
             wasGenArr = False
-            for i, varType in enumerate(self.varTypes[1]): 
+            for i, varType in enumerate(self.varDefs['Input']): 
                 for varValues in sequence:
-                    if varValues[1][i]['Mode'].lower() == 'tuple':
+                    if varValues['Input'][i]['Mode'].lower() == 'tuple':
                         generator['Value'] = 'rTuple'
                         wasGenArr = True
                         generator['Name'] = varType['Name']
-                        generator['Value'] += ', ' + varValues[1][i]['Value']   
+                        generator['Value'] += ', ' + varValues['Input'][i]['Value']   
                         generator['Test'] = sequence
                         generator['Len']+=3
-                    elif str(varValues[1][i]['Value']) != '' and varValues[1][i]['Mode'].lower() == '' and wasGenArr == True:
-                        generator['Value'] += ', ' + varValues[1][i]['Value']
+                    elif str(varValues['Input'][i]['Value']) != '' and varValues['Input'][i]['Mode'].lower() == '' and wasGenArr == True:
+                        generator['Value'] += ', ' + varValues['Input'][i]['Value']
                         generator['Len']+=2
                     else:
                         wasGenArr = False                    
@@ -73,25 +95,25 @@ class Test:
 
         # Collector for the parametrized test values
         testvars = []
-        for sequence in self.sequences:
+        for sequence in self.runSequences:
             testvar = []
-            wasFix = [False] * len(self.varTypes[1])
+            wasFix = [False] * len(self.varDefs['Input'])
             for varValues in sequence:
                 #TODO: change to list
-                const = "( " + self.varTypes[0]['Name'] + " := " + str(int(varValues[0]))
-                for i, varType in enumerate(self.varTypes[1]):
-                    if str(varValues[1][i]['Value']) != '' and (varValues[1][i]['Mode'].lower() == 'fix' or varValues[1][i]['Mode'].lower() == '' and wasFix[i] == True):
-                        const += ", " + varType['Name'] + " := " + str(varValues[1][i]['Value'])
+                const = "( " + self.varDefs['Time']['Name'] + " := " + str(int(varValues['Time']))
+                for i, varType in enumerate(self.varDefs['Input']):
+                    if str(varValues['Input'][i]['Value']) != '' and (varValues['Input'][i]['Mode'].lower() == 'fix' or varValues['Input'][i]['Mode'].lower() == '' and wasFix[i] == True):
+                        const += ", " + varType['Name'] + " := " + str(varValues['Input'][i]['Value'])
                         wasFix[i] = True
                         varType['Mode'] = 'fix' # TODO just temporary
                     else:
-                        varType['Mode'] = varValues[1][i]['Mode']
+                        varType['Mode'] = varValues['Input'][i]['Mode']
                         wasFix[i] = False
         
-                for i, varType in enumerate(self.varTypes[2]):
-                    if str(varValues[2][i]['Value']) != '':
-                        const += ", " + varType['Name'] + " := " + str(varValues[2][i]['Value'])
-                        varType['Mode'] = varValues[2][i]['Type']
+                for i, varType in enumerate(self.varDefs['Output']):
+                    if str(varValues['Input'][i]['Value']) != '':
+                        const += ", " + varType['Name'] + " := " + str(varValues['Output'][i]['Value'])
+                        varType['Mode'] = varValues['Output'][i]['Type']
                 const += " )"
                     
                 testvar.append(const)
@@ -110,14 +132,11 @@ class Test:
     def _updateStates(self):
         pass    
     
-    def parseData(self, varTypes):
+    def parseData(self):
         """Parses variables and sequence code to generate additional sequences from preset"""
 
-        self.varTypes = varTypes.copy()
         self._generateConst()
         self._generateVars()
-        
         self._updateStates()
      
-    
-    
+        

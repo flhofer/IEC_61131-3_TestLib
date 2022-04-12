@@ -57,19 +57,16 @@ class Workbook:
         if self._workBook.nsheets <= self._sheetNo:
             raise StopIteration
         self._sheet = self._workBook.sheet_by_index(self._sheetNo)
-        self._readBaseParams()
         return self
     
-    def getFunctionVars(self):
+    def getFunctionVars(self, test):
         """Collect the names and types of I/O vaiables in tables"""
         
-        testTime = {"Name" : self._sheet.cell(self._scanPos,1).value, "Type": "DWORD"}
+        test.setTimeType({"Name" : self._sheet.cell(self._scanPos,1).value, "Type": "DWORD"})
 
         # read actual line, field 2 on
         columns = self._sheet.row_values(self._scanPos, 2)
         
-        inputs = []
-        outputs= []
         outToIn = False
         coliterator = iter(columns)
         for field in coliterator:
@@ -85,9 +82,9 @@ class Workbook:
                         newVar["Type"] = field
                     
                     if not outToIn :
-                        outputs.append(newVar.copy())
+                        test.appendOutputType(newVar.copy())
                     else:
-                        inputs.append(newVar.copy())
+                        test.appendInputType(newVar.copy())
                     newVar.clear()
                 else:
                     if outToIn:
@@ -95,32 +92,31 @@ class Workbook:
                     outToIn = True
         
         self._scanPos += 1 # next line, start to scan
-        return [testTime, inputs, outputs]    
     
-    def _scanLine(self, columns, typeDef):
+    def _scanRunLine(self, fields, typeDef):
         """Read a variable line and create time and I/O value list"""
         
         inputs = []
         outputs= []
         
         # Time value
-        testTime = columns[0]
+        testTime = fields[0]
         
         i = 1
-        for _ in typeDef[2]:
-            varValue = {"Value": columns[i], "Type": columns[i+1]}
+        for _ in typeDef['Output']:
+            varValue = {"Value": fields[i], "Type": fields[i+1]}
             outputs.append(varValue.copy())
             varValue.clear()
             i+= 2
         
         i+=1 # skip the line with hash
-        for _ in typeDef[1]:
-            varValue = {"Value": columns[i], "Mode": columns[i+1]}
+        for _ in typeDef['Input']:
+            varValue = {"Value": fields[i], "Mode": fields[i+1]}
             inputs.append(varValue.copy())
             varValue.clear()
             i+= 2
             
-        return [testTime, inputs, outputs]    
+        return { 'Time': testTime, 'Input' : inputs, 'Output' : outputs}    
         
     def _readRunSequence(self, typeDef):
         """Read a test sequence in spreadsheet, group them into a value set"""
@@ -129,36 +125,36 @@ class Workbook:
         while (self._sheet.nrows > self._scanPos):
             if (self._sheet.cell(self._scanPos,1).value == ''):
                 break
-            newLine = self._scanLine(self._sheet.row_values(self._scanPos,1), typeDef)
+            newLine = self._scanRunLine(self._sheet.row_values(self._scanPos,1), typeDef)
             sequence.append(newLine)
             print ("New input found = " + str(newLine))
             self._scanPos += 1
             
         return sequence
 
-    def readSequences(self, typeDef):
+    def readSequences(self, test):
         """Read all sequences in a test configuration _sheet"""
-        
-        sequences = []
-        
+               
         while (self._sheet.nrows > self._scanPos):
-            newSequence = self._readRunSequence(typeDef)
-            if newSequence != []:
-                sequences.append(newSequence)
-                print ("Sequence ", len(sequences))
+            seqID = self._sheet.cell(self._scanPos,0).value
+
+            # Run sequence?
+            if seqID == 'Run':
+                newSequence = self._readRunSequence(test.varDefs)
+                if newSequence != []:
+                    test.appendRunSequence(newSequence)
                 
             self._scanPos+=1 # skip empty line
-        
-        return sequences
-    
+            
     def readTest(self):
         
+        # read test base parameters at sheet top
+        self._readBaseParams()
+      
         test = Test(self.testName, self.instanceName, self.fbName)
         # found header, scan for labels.
-        varTypes = self.getFunctionVars()
+        self.getFunctionVars(test)
         # build step dictionary
-        test.sequences = self.readSequences(varTypes)
-        # parse data and prepare test structure
-        test.parseData(varTypes)
+        self.readSequences(test)
         
         return test

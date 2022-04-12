@@ -31,7 +31,9 @@ def main(argv):
 				
 		# TODO: create multiple tests per sheet, continue on next sheet with new file, use generator!
 		test = sheet.readTest()		
-
+		# parse data and prepare test structure
+		test.parseData()
+		
 		with ExpWriter(fileName=test.testName) as testFile:
 			testFile.writeTest(test)
 

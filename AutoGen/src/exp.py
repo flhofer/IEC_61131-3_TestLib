@@ -186,7 +186,7 @@ class ExpWriter(ExportWriter):
         if test.maxSteps > 1:
             # Write step length only if needed
             selSteps = False
-            for i, sequence in enumerate (test.sequences):
+            for i, sequence in enumerate (test.runSequences):
                 if len(sequence) < test.maxSteps:
                     text = ''
                     if selSteps:
@@ -212,13 +212,13 @@ class ExpWriter(ExportWriter):
         
         self._write(test.instanceName + '(\n')
         
-        for varType in test.varTypes[1]:
+        for varType in test.varDefs['Input']:
             self._write(varType['Name'] + ' := ptTestVars^.' + varType['Name'] + '\n', indent=5)
             
         self._write(');\n', indent=5)
         self._write('\n', indent=0)
         
-        for varType in test.varTypes[2]:
+        for varType in test.varDefs['Output']:
             line = ''
             if varType['Type'] == 'BOOL':
                 line = 'assertEquals '
@@ -247,7 +247,7 @@ class ExpWriter(ExportWriter):
         
         self._indent=0
         
-    def _createTestDUT(self, varTypes, testName):
+    def _createTestDUT(self, varDefs, testName):
         """Create test variable data type for the test parameter table"""
         
         print ("Writing data type used for the test to file..")
@@ -261,13 +261,13 @@ class ExpWriter(ExportWriter):
         
         self._indent=1
         
-        self._write(varTypes[0]['Name'] + ' : ' + varTypes[0]['Type'] + ';\n')
+        self._write(varDefs['Time']['Name'] + ' : ' + varDefs['Time']['Type'] + ';\n')
         self._write('(* Inputs *)\n')
-        for varType in varTypes[1]:
+        for varType in varDefs['Input']:
             self._write(varType['Name'] + ' : ' + varType['Type'] + ';\n')
     
         self._write('(* Expected outputs *)\n')
-        for varType in varTypes[2]:
+        for varType in varDefs['Output']:
             self._write(varType['Name'] + ' : ' + varType['Type'] + ';\n')
     
         self._indent=0
@@ -283,7 +283,7 @@ class ExpWriter(ExportWriter):
         self._endDeclaration()
         self._createStateMachine(test)
         self._createFooter()
-        self._createTestDUT(test.varTypes, test.testName)
+        self._createTestDUT(test.varDefs, test.testName)
       
 class XmlWriter(ExportWriter):
     """XML style export writer"""
