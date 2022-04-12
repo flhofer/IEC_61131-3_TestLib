@@ -164,15 +164,21 @@ class ExpWriter(ExportWriter):
         """Create test state machine, main test execution"""
         
         print ("Create state machine for testing...\n")
+
         self._indent = 1;
         self._write("testInit('" + test.testName[:TEST_NAME_MAX] + "', NoOfTests)\n\n")
         self._write('CASE _tls_ OF\n')
+
+        ''' INIT STATE '''
+
         self._write('sT_INIT:    (* Reset *)\n')
         self._indent = 4;
-        self._write('SysMemSet (ADR(' + test.instanceName + '), 0, SIZEOF(' + test.instanceName + '));\n')
+        
+        if test.fbName != '' : # if there is an instance -> clear
+            self._write('SysMemSet (ADR(' + test.instanceName + '), 0, SIZEOF(' + test.instanceName + '));\n')
 
-        if test.maxSteps:
-            # Write steplenght only if needed
+        if test.maxSteps > 1:
+            # Write step length only if needed
             selSteps = False
             for i, sequence in enumerate (test.sequences):
                 if len(sequence) < test.maxSteps:
@@ -181,7 +187,7 @@ class ExpWriter(ExportWriter):
                         text = 'ELS'
 
                     selSteps = True
-                    text += 'IF _tst_ = ' + str(i) + ' THEN\n'
+                    text += 'IF _tlt_ = ' + str(i) + ' THEN\n'
                     self._write(text)
                     self._write('testParam(pSteps, '+ str(len(sequence)) +');\n', self._indent+1)
             if selSteps:
@@ -192,6 +198,9 @@ class ExpWriter(ExportWriter):
                 self._indent-=1
         
         self._write('\n', indent=0)
+        
+        ''' RUN STATE ''' 
+        
         self._write('sT_RUN:    (* test run *)\n', indent=1)
         self._write('ptTestVars := ADR(Tests_Values[_tlt_,_tlp_]);\n')
         
@@ -206,23 +215,30 @@ class ExpWriter(ExportWriter):
         for varType in test.varTypes[2]:
             line = ''
             if varType['Type'] == 'BOOL':
-                line = 'assertEquals'
+                line = 'assertEquals '
+            elif varType['Type'] == 'STRUCT':
+                line = 'assertEqualsO'
             else:
                 line = 'assertEqualsD'
-            line += ' (    Value1 := ' + test.instanceName + '.' + varType['Name'] +',\n'
+            line += ' ( Value1 := ' + test.instanceName + '.' + varType['Name'] +',\n'
             self._write(line)
-            self._write('Value2 := ptTestVars^.' + varType['Name'] + ',\n', indent=9)
+            self._write('Value2 := ptTestVars^.' + varType['Name'] + ',\n', indent=8)
             line = 'Mode := '
             
-#            if varType.mode[0] == '=' or varType.mode[0] == 'VFY':           
-            line += 'mVFY'
-#            elif varType.mode[0] == 'BFRNG':
-#                line += 'mBFRNG, '
-#                line += str(varType.mode[1])
+            '''
+            if varType['Mode'] == '=' or varType['Mode'] == 'VFY': '''           
+            line += 'mVFY' 
+            '''
+            elif varType['Mode'][0] == 'BFRNG':
+                line += 'mBFRNG + '
+                line += str(varType.mode[1])'''
             line += ', Delay := ptTestVars^.testTime);\n\n'
-            self._write(line, indent=9)
+            self._write(line, indent=8)
         
+        ''' PASS STATE '''
+            
         self._write('sTC_PASS: Pass := TRUE;\n    END_CASE\n', indent=1)
+        
         self._indent=0
         
     def _createTestDUT(self, varTypes, testName):

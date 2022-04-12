@@ -114,7 +114,7 @@ class Workbook:
         
         i+=1 # skip the line with hash
         for _ in typeDef[1]:
-            varValue = {"Value": columns[i], "Type": columns[i+1]}
+            varValue = {"Value": columns[i], "Mode": columns[i+1]}
             inputs.append(varValue.copy())
             varValue.clear()
             i+= 2

@@ -41,14 +41,14 @@ class Test:
             wasGenArr = False
             for i, varType in enumerate(self.varTypes[1]): 
                 for varValues in sequence:
-                    if varValues[1][i]['Type'].lower() == 'tuple':
+                    if varValues[1][i]['Mode'].lower() == 'tuple':
                         generator['Value'] = 'rTuple'
                         wasGenArr = True
                         generator['Name'] = varType['Name']
                         generator['Value'] += ', ' + varValues[1][i]['Value']   
                         generator['Test'] = sequence
                         generator['Len']+=3
-                    elif str(varValues[1][i]['Value']) != '' and varValues[1][i]['Type'].lower() == '' and wasGenArr == True:
+                    elif str(varValues[1][i]['Value']) != '' and varValues[1][i]['Mode'].lower() == '' and wasGenArr == True:
                         generator['Value'] += ', ' + varValues[1][i]['Value']
                         generator['Len']+=2
                     else:
@@ -81,7 +81,7 @@ class Test:
                 #TODO: change to list
                 const = "( " + self.varTypes[0]['Name'] + " := " + str(int(varValues[0]))
                 for i, varType in enumerate(self.varTypes[1]):
-                    if str(varValues[1][i]['Value']) != '' and (varValues[1][i]['Type'].lower() == 'fix' or varValues[1][i]['Type'].lower() == '' and wasFix[i] == True):
+                    if str(varValues[1][i]['Value']) != '' and (varValues[1][i]['Mode'].lower() == 'fix' or varValues[1][i]['Mode'].lower() == '' and wasFix[i] == True):
                         const += ", " + varType['Name'] + " := " + str(varValues[1][i]['Value'])
                         wasFix[i] = True
                     else:
