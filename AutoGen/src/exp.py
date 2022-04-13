@@ -195,7 +195,7 @@ class ExpWriter(ExportWriter):
                     selSteps = True
                     text += 'IF _tlt_ = ' + str(i) + ' THEN\n'
                     self._write(text)
-                    self._write('testParam(pSteps, '+ str(len(sequence)) +');\n', self._indent+1)
+                    self._write('testParam(pSTEPS, '+ str(len(sequence)) +');\n', self._indent+1)
             if selSteps:
                 self._write('ELSE\n');
                 self._indent+=1
@@ -208,7 +208,7 @@ class ExpWriter(ExportWriter):
             if stateCode[CODE_STATE] == STATES['Init']:
                 for line in stateCode[CODE_CODE]:
                     if line[TEST_TIME] != 0:
-                        self._write('testParam(pWait, ' + str(line[TEST_TIME])+ ');\n')
+                        self._write('testParam(pWTIME, ' + str(line[TEST_TIME])+ ');\n')
                     self._write(line[CODE_LINE] + '\n')
                     
         self._write('\n', indent=0)
@@ -221,6 +221,10 @@ class ExpWriter(ExportWriter):
         self._write(test.instanceName + '(\n')
         
         for varType in test.varDefs[TEST_INPUT]:
+#            list(filter(lambda person: person['name'] == 'Pam', people))
+#            next((item for item in dicts if item["name"] == "Pam"), None)
+#            if varType[VAR_NAME] in test.generators[VAR_NAME]:
+#                pass
             self._write(varType[VAR_NAME] + ' := ptTestVars^.' + varType[VAR_NAME] + '\n', indent=5)
             
         self._write(');\n', indent=5)
