@@ -54,12 +54,11 @@ VAR_INPUT
     Parm1 : DWORD;
     Parm2 : DWORD;
     Parm1b AT Parm1 : STRUCT
-            Number: ARRAY [0..27] OF BOOL;
-            (* Warn! these are the bits controlling ranges *) 
-            bBefore : BOOL;
-            bAfter : BOOL;
-            bRange : BOOL;
             bSign : BOOL;
+            bRange : BOOL;
+            bAfter : BOOL;
+            bBefore : BOOL;
+            (* Warn! these are the bits controlling ranges *) 
             END_STRUCT;
     (* these parameters may be reused as variables inside the code, BEWARE *)
 END_VAR
@@ -77,7 +76,7 @@ VAR_TEMP
 END_VAR
 
 BEGIN
-    IF E THEN
+    IF NOT E THEN
 
     (* State Machine for test cases*)
     (* --- input parameters --- *)
@@ -279,9 +278,9 @@ BEGIN
     END_CASE;
     
     (* Set the global test values for this test case *)
-    "_tl_global"._tls := DINT_TO_BYTE(RetVal);
-    "_tl_global"._tlt := INT_TO_BYTE(TestCases.testCaseMem[TestCases.tCase].TestCounter);
-    "_tl_global"._tlp := INT_TO_BYTE(TestCases.testCaseMem[TestCases.tCase].TestStep);
+    "_tl_global"._tls := DINT_TO_INT(RetVal);
+    "_tl_global"._tlt := TestCases.testCaseMem[TestCases.tCase].TestCounter;
+    "_tl_global"._tlp := TestCases.testCaseMem[TestCases.tCase].TestStep;
     
     ELSE // -- assertThat
     
@@ -292,12 +291,11 @@ BEGIN
     (* RetVal: 1 = executed, negative=error information *)
     
     RetVal := 1;
-    _tl_const._delayScale := _tl_const._delayScale; 
 
     before := (_tl_const._delayIsTime AND (TIME_TO_DINT(TIME_TCK() - TestCases.testCaseMem[TestCases.tCase].StartTime) <= DWORD_TO_DINT(Parm2) + DWORD_TO_DINT(Parm1 AND 16#FFFFFF) * _tl_const._delayScale * BOOL_TO_DINT(Parm1b.bRange)))
                 OR (NOT _tl_const._delayIsTime AND (TestCases.testCaseMem[TestCases.tCase].ExecCounter <= DWORD_TO_DINT(Parm2) + DWORD_TO_DINT(Parm1 AND 16#FFFFFF) * _tl_const._delayScale * BOOL_TO_DINT(Parm1b.bRange)));
     
-    after := (_tl_const._delayIsTime AND (TIME_TO_DINT(TIME_TCK() - TestCases.testCaseMem[TestCases.tCase].StartTime) >= DWORD_TO_DINT(Parm2) - DWORD_TO_DINT(Parm1 AND 16#FFFFFF) * _tl_const._delayScale * BOOL_TO_DINT(Parm1b.bRange)))
+    after :=  (_tl_const._delayIsTime AND (TIME_TO_DINT(TIME_TCK() - TestCases.testCaseMem[TestCases.tCase].StartTime) >= DWORD_TO_DINT(Parm2) - DWORD_TO_DINT(Parm1 AND 16#FFFFFF) * _tl_const._delayScale * BOOL_TO_DINT(Parm1b.bRange)))
                 OR (NOT _tl_const._delayIsTime AND (TestCases.testCaseMem[TestCases.tCase].ExecCounter >= DWORD_TO_DINT(Parm2) - DWORD_TO_DINT(Parm1 AND 16#FFFFFF) * _tl_const._delayScale * BOOL_TO_DINT(Parm1b.bRange)));
     
     
@@ -318,6 +316,15 @@ BEGIN
         TestCases.testCaseMem[TestCases.tCase].AssertStats[TestCases.assert].Done :=    after AND (before OR NOT Parm1b.bBefore OR NOT Parm1b.bAfter);
         TestCases.testCaseMem[TestCases.tCase].AssertStats[TestCases.assert].Success := TestCases.testCaseMem[TestCases.tCase].AssertStats[TestCases.assert].Success OR (value AND TestCases.testCaseMem[TestCases.tCase].AssertStats[TestCases.assert].Done);
     END_IF;
+
+    (*
+        mVFY        : DWORD := 16#00000000; 
+        mBEFORE        : DWORD := 16#10000000; Parm1.bBefore
+        mAFTER        : DWORD := 16#20000000; Parm1.bAfter
+        mAT            : DWORD := 16#30000000; Parm1.bBefore & bAfter
+        mBFRNG        : DWORD := 16#50000000; Parm1.bBefore & bRange
+        mAFTRNG        : DWORD := 16#60000000; Parm1.bAfter & bRange
+        mATRNG        : DWORD := 16#70000000; Parm1.bBefore & bAfter & bRange *)
         
     (* get next TestCases.assert *)
     IF TestCases.assert < _tl_const._assertsPerTest THEN

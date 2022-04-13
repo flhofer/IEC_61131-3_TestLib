@@ -5,9 +5,9 @@ FAMILY : 'APTest'
 VERSION : 1.0
 AUTHOR : 'FlorianH'
 STRUCT
-    _tls   : BYTE := 16#1; // Global variable, actual test status 
-    _tlt   : BYTE := 16#1; // Global variable, actual test number 
-    _tlp   : BYTE := 16#1; // Global variable, actual test point/step 
+    _tls   : INT := 1; // Global variable, actual test status 
+    _tlt   : INT := 1; // Global variable, actual test number 
+    _tlp   : INT := 1; // Global variable, actual test point/step 
 
 // InitVals for Randomize 
     RND_Seed: DWORD := DWORD#16#34C75E4;

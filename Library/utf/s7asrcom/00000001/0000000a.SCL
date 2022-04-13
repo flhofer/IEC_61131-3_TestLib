@@ -15,7 +15,7 @@ END_VAR
 
 BEGIN
 (* Todo Better Checks for assertion memory positions *)
-IF TestCases.tCase > 0 AND TestCases.assert > 0 THEN
+IF TestCases.tCase <= _tl_const._testCases AND TestCases.assert <= _tl_const._assertsPerTest THEN
     (* Delay from secs to milisecs *)
     TestCase.TestCase1 (E := TRUE, Value := Value, Parm1 := Mode, Parm2 := DINT_TO_DWORD(DWORD_TO_DINT(Delay) * _tl_const._delayScale));
     assertTrue := TestCase1.RetVal;
