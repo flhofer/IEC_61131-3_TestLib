@@ -202,6 +202,7 @@ class ExpWriter(ExportWriter):
             
             header = self._writeStateCode(test, state)
         
+            ''' Some additional key states '''
             if state == 'Init' and test.maxSteps > 1:
                 ''' Init State '''
                 if not header:

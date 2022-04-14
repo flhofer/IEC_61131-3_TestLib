@@ -12,7 +12,6 @@ email info@florianhofer.it
 
 TEST_NAME_MAX = 10
 
-
 ''' Constants for data/dictionary use '''
 TEST_INPUT = 'Input'
 TEST_OUTPUT = 'Output'
@@ -28,22 +27,10 @@ CODE_STATE = 'State'
 CODE_CODE = 'Code'
 
 ''' Constants for Test's internal use ''' 
-MODES = { 'VFY' : 'mVFY', 'AT': 'mAT', 'BFRNG': 'mBFRNG', 'ATRNG': 'mATRNG', 'AFRNG' : 'mAFRNG'}
-'''
-    mEQ            : DWORD := 16#0000000;
-    mLT            : DWORD := 16#1000000;
-    mGT            : DWORD := 16#2000000;
-    mLEQ        : DWORD := 16#3000000;
-    mGEQ        : DWORD := 16#4000000;
-    mBTW        : DWORD := 16#5000000; (* not implemented yet *)
-    mVFY        : DWORD := 16#00000000;
-    mBEFORE        : DWORD := 16#10000000;
-    mAFTER        : DWORD := 16#20000000;
-    mAT            : DWORD := 16#30000000;
-    mBFRNG        : DWORD := 16#50000000;
-    mAFTRNG        : DWORD := 16#60000000;
-    mATRNG        : DWORD := 16#70000000;
-'''    
+MODES = { 'EQ' : 'mEQ', '=' : 'mEQ', '==' : 'mEQ', 'LT' : 'mLT', '<' : 'mLT', 'GT' : 'mGT', '>' : 'mGT',
+          'LEQ' : 'mLEQ', '<=' : 'mLEQ', 'GEQ' : 'mGEQ', '>=' : 'mGEQ', 'BTW' : 'mBTW', '><' : 'mBTW',
+          'VFY' : 'mVFY', 'BEFORE' : 'mBEFORE', 'AFTER': 'mAFTER', 'AT': 'mAT', 
+          'BFRNG': 'mBFRNG', 'ATRNG': 'mATRNG', 'AFRNG' : 'mAFRNG'}
 
 STATES = { 
     # Test Case preparation 
