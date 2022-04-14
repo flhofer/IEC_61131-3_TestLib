@@ -22,7 +22,7 @@ class ExportWriter:
     def __init__(self, fileName, extension='.txt'):
         """Initialize instance and open output file"""
         try:
-            self.testFile = open(fileName + extension, "w")
+            self.testFile = open(fileName + extension, "w", encoding="utf-8")
         except:
             print ("Unable to open file ' + fileName + ' for write")
             raise FileNotFoundError
