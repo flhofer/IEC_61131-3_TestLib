@@ -12,8 +12,6 @@ email info@florianhofer.it
 
 from builtins import list
 from settings import *
-from textwrap import indent
-from samba.provision.sambadns import SecureTimeProperty
 
 if __name__ == '__main__':
     pass
@@ -24,7 +22,7 @@ class ExportWriter:
     def __init__(self, fileName, extension='.txt'):
         """Initialize instance and open output file"""
         try:
-            self.testFile = open(fileName + extension, "w", encoding="utf-8")
+            self.testFile = open(fileName + extension, "w", encoding="utf-8", newline="\r\n")
         except:
             print ("Unable to open file ' + fileName + ' for write")
             raise FileNotFoundError
@@ -121,7 +119,10 @@ class ExpWriter(ExportWriter):
                         if test.maxSteps-len(value) > 0:
                             self._write(text+',\n')
                             #TODO: use time variable name
-                            text = (str(test.maxSteps-len(value)) + "( testtime :=  0 )")
+                            text = ''
+                            if test.maxSteps-len(value) > 1:
+                                text = str(test.maxSteps-len(value)) 
+                            text += "( " +  test.varDefs[TEST_TIME][VAR_NAME] + " :=  0 )"
                             
                 self._write(text+';\n')
                 self._indent-=1
@@ -192,7 +193,7 @@ class ExpWriter(ExportWriter):
         print ("Create state machine for testing...\n")
 
         self._indent = 1;
-        self._write("testInit('" + test.testName[:TEST_NAME_MAX] + "', NoOfTests)\n\n")
+        self._write("testInit('" + test.testName[:TEST_NAME_MAX] + "', NoOfTests);\n\n")
         self._write('CASE _tls_ OF\n')
 
         ''' Write State Code '''
@@ -229,6 +230,7 @@ class ExpWriter(ExportWriter):
                 self._write('testParam(pSteps, '+ str(test.maxSteps) +');\n')
                 if selSteps:
                     self._indent-=1
+                    self._write('END_IF\n');
                             
                 self._write('\n', indent=0)
         
@@ -237,7 +239,8 @@ class ExpWriter(ExportWriter):
                 if not header:
                     self._writeStateHeader(state)
 
-                self._write('ptTestVars := ADR(Tests_Values[_tlt_,_tlp_]);\n')
+                #TODO replace with test object variable, pointer and variable group
+                self._write('ptrVars := ADR(TestVars[_tlt_,_tlp_]);\n')
         
                 self._write(test.instanceName + '(\n')
         
@@ -251,7 +254,7 @@ class ExpWriter(ExportWriter):
                         self._write(text)
                         self._indent+=1
                         text = ''
-                    text += 'ptTestVars^.' + varType[VAR_NAME]
+                    text += 'ptrVars^.' + varType[VAR_NAME]
                     if generator:
                         text += ')'
                     text += '\n'
@@ -273,7 +276,7 @@ class ExpWriter(ExportWriter):
                         line = 'assertEqualsD'
                     line += ' ( Value1 := ' + test.instanceName + '.' + varType[VAR_NAME] +',\n'
                     self._write(line)
-                    self._write('Value2 := ptTestVars^.' + varType[VAR_NAME] + ',\n', indent=8)
+                    self._write('Value2 := ptrVars^.' + varType[VAR_NAME] + ',\n', indent=8)
                     line = 'Mode := '
                     
                     varMode = varType[VAR_TEST].split(",")
@@ -284,7 +287,7 @@ class ExpWriter(ExportWriter):
                             line += ' + ' + varMode[1]
                     else:
                         line += 'mVFY' 
-                    line += ', Delay := ptTestVars^.testTime);\n\n'
+                    line += ', Delay := ptrVars^.testTime);\n\n'
                     self._write(line, indent=8)
             
             if state == 'Case Pass':
@@ -307,7 +310,7 @@ class ExpWriter(ExportWriter):
         self._write("(* @NESTEDCOMMENTS := 'Yes' *)\n")
         self._write("(* @PATH := '' *)\n")
         self._write("(* @OBJECTFLAGS := '0, 8' *)\n")
-        self._write("TYPE Vars" + testName + " :\n")
+        self._write("TYPE Vars_" + testName + " :\n")
         self._write("STRUCT\n")
         
         self._indent=1
@@ -325,6 +328,19 @@ class ExpWriter(ExportWriter):
         self._write("END_STRUCT\n")
         self._write("END_TYPE\n\n")
         self._write("(* @END_DECLARATION := '0' *)\n")
+        
+    def writeGlobals(self):
+        
+        '''
+        VAR_GLOBAL CONSTANT
+            (* user parameters *)
+            _tl_assertsPerTest    : INT := 3;
+            _tl_testCases        : INT := 9;
+            _tl_testMessages    : INT := 63;
+            _delayScale            : INT := 1;    (* example 1 for ms, 1000 for sec, or simply multiplier of cycles *)
+            _delayIsTime        : BOOL := FALSE; (* Execution time delay or execution counter delay selection *)
+        END_VAR
+        '''
     
     def writeTest(self, test):
         

@@ -83,8 +83,7 @@ class Test:
             if generator['Len'] > 0:
                 self.generators.append(generator)
 
-        self.variables.append({ VAR_NAME: 'ptrVars', VAR_TYPE: 'POINTER TO ' + self.testName + '_vars'})
-        self.variables.append({ VAR_NAME: 'i', VAR_TYPE: 'INT', VAR_VALUE : "1"})
+        self.variables.append({ VAR_NAME: 'ptrVars', VAR_TYPE: 'POINTER TO Vars_' + self.testName })
         if self.fbName != '':
             self.variables.append({ VAR_NAME: self.instanceName,    VAR_TYPE: self.fbName})
     

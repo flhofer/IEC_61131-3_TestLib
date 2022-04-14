@@ -27,10 +27,10 @@ CODE_STATE = 'State'
 CODE_CODE = 'Code'
 
 ''' Constants for Test's internal use ''' 
-MODES = { 'EQ' : 'mEQ', '=' : 'mEQ', '==' : 'mEQ', 'LT' : 'mLT', '<' : 'mLT', 'GT' : 'mGT', '>' : 'mGT',
+MODES = { 'VFY' : 'mVFY', '=' : 'mVFY', '==' : 'mVFY', 'LT' : 'mLT', '<' : 'mLT', 'GT' : 'mGT', '>' : 'mGT',
           'LEQ' : 'mLEQ', '<=' : 'mLEQ', 'GEQ' : 'mGEQ', '>=' : 'mGEQ', 'BTW' : 'mBTW', '><' : 'mBTW',
-          'VFY' : 'mVFY', 'BEFORE' : 'mBEFORE', 'AFTER': 'mAFTER', 'AT': 'mAT', 
-          'BFRNG': 'mBFRNG', 'ATRNG': 'mATRNG', 'AFRNG' : 'mAFRNG'}
+          'EQ' : 'mEQ', 'BEFORE' : 'mBEFORE', 'AFTER': 'mAFTER', 'AT': 'mAT', 
+          'BFRNG': 'mBFRNG', 'ATRNG': 'mATRNG', 'AFTRNG' : 'mAFTRNG'}
 
 STATES = { 
     # Test Case preparation 
