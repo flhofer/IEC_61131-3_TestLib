@@ -62,7 +62,7 @@ class Test:
 
         self.generators = []
         # Collector for the parametrized test values
-        for sequence in self.runSequences:
+        for s, sequence in enumerate(self.runSequences):
             generator = { 'Len' : 0, VAR_NAME : '', VAR_VALUE : '', 'Test': 0}
             wasGenArr = False
             for i, varType in enumerate(self.varDefs[TEST_INPUT]): 
@@ -72,7 +72,7 @@ class Test:
                         wasGenArr = True
                         generator[VAR_NAME] = varType[VAR_NAME]
                         generator[VAR_VALUE] += ', ' + varValues[TEST_INPUT][i][VAR_VALUE]   
-                        generator['Test'] = sequence
+                        generator[VAR_TEST] = s+1
                         generator['Len']+=3
                     elif str(varValues[TEST_INPUT][i][VAR_VALUE]) != '' and varValues[TEST_INPUT][i][VAR_MODE].lower() == '' and wasGenArr == True:
                         generator[VAR_VALUE] += ', ' + varValues[TEST_INPUT][i][VAR_VALUE]
@@ -89,7 +89,8 @@ class Test:
             self.variables.append({ VAR_NAME: self.instanceName,    VAR_TYPE: self.fbName})
     
         for i, generator in enumerate(self.generators):
-            self.variables.append({ VAR_NAME: 'Array' + str(i+1), VAR_TYPE: 'ARRAY[1..' + str(generator['Len']) +'] OF REAL', VAR_VALUE : generator[VAR_VALUE]})
+            generator[VAR_REF] = 'Array' + str(i+1)
+            self.variables.append({ VAR_NAME: generator[VAR_REF], VAR_TYPE: 'ARRAY[1..' + str(generator['Len']) +'] OF REAL', VAR_VALUE : generator[VAR_VALUE]})
 
         return self.variables
 

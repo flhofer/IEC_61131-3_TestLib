@@ -12,6 +12,8 @@ email info@florianhofer.it
 
 from builtins import list
 from settings import *
+from textwrap import indent
+from samba.provision.sambadns import SecureTimeProperty
 
 if __name__ == '__main__':
     pass
@@ -165,7 +167,25 @@ class ExpWriter(ExportWriter):
         self._indent=0                       
         self._write("END_VAR\n")
 
-        
+    def _writeStateHeader(self, state):
+        ''' Writes the case steatement constant and indent '''
+        self._write(STATES[state] + ':    (* State '+  state + ' *)\n', indent = 1)
+        self._indent = 4;
+
+    def _writeStateCode(self, test, state):
+        ''' Write the code for the state found in input'''
+                
+        for stateCode in test.stateCode:
+            if stateCode[CODE_STATE] == STATES[state]:
+                self._writeStateHeader(state)
+                for line in stateCode[CODE_CODE]:
+                    if line[TEST_TIME] != 0:
+                        self._write('testParam(pWTIME, ' + str(line[TEST_TIME])+ ');\n')
+                    self._write(line[CODE_LINE] + '\n')
+                    
+                return True
+        return False
+                            
     def _createStateMachine(self, test):
         """Create test state machine, main test execution"""
         
@@ -175,89 +195,106 @@ class ExpWriter(ExportWriter):
         self._write("testInit('" + test.testName[:TEST_NAME_MAX] + "', NoOfTests)\n\n")
         self._write('CASE _tls_ OF\n')
 
-        ''' INIT STATE '''
+        ''' Write State Code '''
 
-        self._write('sT_INIT:    (* Reset *)\n')
-        self._indent = 4;
-        
-        if test.fbName != '' : # if there is an instance -> clear
-            self._write('SysMemSet (ADR(' + test.instanceName + '), 0, SIZEOF(' + test.instanceName + '));\n')
-
-        if test.maxSteps > 1:
-            # Write step length only if needed
-            selSteps = False
-            for i, sequence in enumerate (test.runSequences):
-                if len(sequence) < test.maxSteps:
-                    text = ''
-                    if selSteps:
-                        text = 'ELS'
-
-                    selSteps = True
-                    text += 'IF _tlt_ = ' + str(i) + ' THEN\n'
-                    self._write(text)
-                    self._write('testParam(pSTEPS, '+ str(len(sequence)) +');\n', self._indent+1)
-            if selSteps:
-                self._write('ELSE\n');
-                self._indent+=1
-            self._write('testParam(pSteps, '+ str(test.maxSteps) +');\n')
-            if selSteps:
-                self._indent-=1
-        
-        #TODO: dump for codes of other states, change to STATE-Iterator -> call every state with if
-        for stateCode in test.stateCode:
-            if stateCode[CODE_STATE] == STATES['Init']:
-                for line in stateCode[CODE_CODE]:
-                    if line[TEST_TIME] != 0:
-                        self._write('testParam(pWTIME, ' + str(line[TEST_TIME])+ ');\n')
-                    self._write(line[CODE_LINE] + '\n')
-                    
-        self._write('\n', indent=0)
-        
-        ''' RUN STATE ''' 
-        
-        self._write('sT_RUN:    (* test run *)\n', indent=1)
-        self._write('ptTestVars := ADR(Tests_Values[_tlt_,_tlp_]);\n')
-        
-        self._write(test.instanceName + '(\n')
-        
-        for varType in test.varDefs[TEST_INPUT]:
-#            list(filter(lambda person: person['name'] == 'Pam', people))
-#            next((item for item in dicts if item["name"] == "Pam"), None)
-#            if varType[VAR_NAME] in test.generators[VAR_NAME]:
-#                pass
-            self._write(varType[VAR_NAME] + ' := ptTestVars^.' + varType[VAR_NAME] + '\n', indent=5)
+        for state in STATES:
+            #NOTE > this needs Python 3.6 or higher, ordered dictionaries
             
-        self._write(');\n', indent=5)
-        self._write('\n', indent=0)
+            header = self._writeStateCode(test, state)
         
-        for varType in test.varDefs[TEST_OUTPUT]:
-            line = ''
-            if varType[VAR_TYPE] == 'BOOL':
-                line = 'assertEquals '
-            elif varType[VAR_TYPE] == 'STRUCT':
-                line = 'assertEqualsO'
-            else:
-                line = 'assertEqualsD'
-            line += ' ( Value1 := ' + test.instanceName + '.' + varType[VAR_NAME] +',\n'
-            self._write(line)
-            self._write('Value2 := ptTestVars^.' + varType[VAR_NAME] + ',\n', indent=8)
-            line = 'Mode := '
-            
-            varMode = varType[VAR_TEST].split(",")
-            if varMode[0] in MODES:
+            if state == 'Init' and test.maxSteps > 1:
+                ''' Init State '''
+                if not header:
+                    self._writeStateHeader(state)
+
+                #        if test.fbName != '' : # if there is an instance -> clear
+                #            self._write('SysMemSet (ADR(' + test.instanceName + '), 0, SIZEOF(' + test.instanceName + '));\n')
                 
-                line += varMode[0]
-                if len(varMode) > 1:
-                    line += ' + ' + varMode[1]
-            else:
-                line += 'mVFY' 
-            line += ', Delay := ptTestVars^.testTime);\n\n'
-            self._write(line, indent=8)
+                # Write step length only if needed
+                selSteps = False
+                for i, sequence in enumerate (test.runSequences):
+                    if len(sequence) < test.maxSteps:
+                        text = ''
+                        if selSteps:
+                            text = 'ELS'
+    
+                        selSteps = True
+                        text += 'IF _tlt_ = ' + str(i+1) + ' THEN\n'
+                        self._write(text)
+                        self._write('testParam(pSTEPS, '+ str(len(sequence)) +');\n', self._indent+1)
+                if selSteps:
+                    self._write('ELSE\n');
+                    self._indent+=1
+                self._write('testParam(pSteps, '+ str(test.maxSteps) +');\n')
+                if selSteps:
+                    self._indent-=1
+                            
+                self._write('\n', indent=0)
         
-        ''' PASS STATE '''
+            if state == 'Run':
+                ''' RUN STATE ''' 
+                if not header:
+                    self._writeStateHeader(state)
+
+                self._write('ptTestVars := ADR(Tests_Values[_tlt_,_tlp_]);\n')
+        
+                self._write(test.instanceName + '(\n')
+        
+                self._indent+=1
+                for varType in test.varDefs[TEST_INPUT]:
+                    text = varType[VAR_NAME] + ' := '
+                    #TODO: for now only supports one generator per variable per test
+                    generator = next((item for item in test.generators if item[VAR_NAME] == varType[VAR_NAME]), None)
+                    if generator:
+                        text += 'SEL( _tlt_ <> ' + str(generator[VAR_TEST]) + ', testGenArray(ADR(' + generator[VAR_REF] + '),SIZEOF(' + generator[VAR_REF] + ')),\n'
+                        self._write(text)
+                        self._indent+=1
+                        text = ''
+                    text += 'ptTestVars^.' + varType[VAR_NAME]
+                    if generator:
+                        text += ')'
+                    text += '\n'
+                    self._write(text)
+                    if generator:
+                        self._indent-=1
+    
+                self._write(');\n')
+                self._write('\n', indent=0)
+                self._indent-=1
+                
+                for varType in test.varDefs[TEST_OUTPUT]:
+                    line = ''
+                    if varType[VAR_TYPE] == 'BOOL':
+                        line = 'assertEquals '
+                    elif varType[VAR_TYPE] == 'STRUCT':
+                        line = 'assertEqualsO'
+                    else:
+                        line = 'assertEqualsD'
+                    line += ' ( Value1 := ' + test.instanceName + '.' + varType[VAR_NAME] +',\n'
+                    self._write(line)
+                    self._write('Value2 := ptTestVars^.' + varType[VAR_NAME] + ',\n', indent=8)
+                    line = 'Mode := '
+                    
+                    varMode = varType[VAR_TEST].split(",")
+                    if varMode[0] in MODES:
+                        
+                        line += varMode[0]
+                        if len(varMode) > 1:
+                            line += ' + ' + varMode[1]
+                    else:
+                        line += 'mVFY' 
+                    line += ', Delay := ptTestVars^.testTime);\n\n'
+                    self._write(line, indent=8)
             
-        self._write('sTC_PASS: Pass := TRUE;\n    END_CASE\n', indent=1)
-        
+            if state == 'Case Pass':
+                ''' TEST CASE PASS STATE '''
+                if not header:
+                    self._writeStateHeader(state)
+                
+                self._write('Pass := TRUE;\n')
+
+        self._write(' END_CASE\n', indent=1)
+            
         self._indent=0
         
     def _createTestDUT(self, varDefs, testName):
