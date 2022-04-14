@@ -67,16 +67,16 @@ class Test:
             wasGenArr = False
             for i, varType in enumerate(self.varDefs[TEST_INPUT]): 
                 for varValues in sequence:
-                    if varValues[TEST_INPUT][i][VAR_MODE].lower() == 'tuple':
-                        generator[VAR_VALUE] = 'rTuple'
+                    if varValues[TEST_INPUT][i][VAR_MODE] in GEN_MODES:
+                        generator[VAR_VALUE] = GEN_MODES[varValues[TEST_INPUT][i][VAR_MODE]]
                         wasGenArr = True
                         generator[VAR_NAME] = varType[VAR_NAME]
                         generator[VAR_VALUE] += ', ' + varValues[TEST_INPUT][i][VAR_VALUE]   
                         generator[VAR_TEST] = s+1
-                        generator['Len']+=3
+                        generator['Len']+= len(varValues[TEST_INPUT][i][VAR_VALUE].split(','))
                     elif str(varValues[TEST_INPUT][i][VAR_VALUE]) != '' and varValues[TEST_INPUT][i][VAR_MODE].lower() == '' and wasGenArr == True:
                         generator[VAR_VALUE] += ', ' + varValues[TEST_INPUT][i][VAR_VALUE]
-                        generator['Len']+=2
+                        generator['Len']+= len(varValues[TEST_INPUT][i][VAR_VALUE].split(','))
                     else:
                         wasGenArr = False                    
             
@@ -90,7 +90,7 @@ class Test:
     
         for i, generator in enumerate(self.generators):
             generator[VAR_REF] = 'Array' + str(i+1)
-            self.variables.append({ VAR_NAME: generator[VAR_REF], VAR_TYPE: 'ARRAY[1..' + str(generator['Len']) +'] OF REAL', VAR_VALUE : generator[VAR_VALUE]})
+            self.variables.append({ VAR_NAME: generator[VAR_REF], VAR_TYPE: 'ARRAY[0..' + str(generator['Len']) +'] OF REAL', VAR_VALUE : generator[VAR_VALUE]})
 
         return self.variables
 

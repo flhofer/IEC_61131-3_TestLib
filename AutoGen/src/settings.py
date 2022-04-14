@@ -44,3 +44,7 @@ STATES = {
     'Case Abort' : 'sTC_ABORT', 'Case Stop' : 'sTC_STOP', 'Case End' : 'sTC_END', 'Case Deinit' : 'sTC_DEINIT',
     'Case Pass' : 'sTC_PASS', 'Case Fail' : 'sTC_FAIL', 'Case Error' : 'sTC_ERROR'
     }
+
+GEN_MODES = { 'Random' : 'tRndReal', 'Random Int': 'tRndDint', 'Linear' : 'tLinReal', 'Linear Int' : 'LinDint',
+            'Tuple' : 'tTupReal', 'Tuple Real' : 'tTupDint'
+            }

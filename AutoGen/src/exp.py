@@ -279,7 +279,7 @@ class ExpWriter(ExportWriter):
                     varMode = varType[VAR_TEST].split(",")
                     if varMode[0] in MODES:
                         
-                        line += varMode[0]
+                        line += MODES[varMode[0]]
                         if len(varMode) > 1:
                             line += ' + ' + varMode[1]
                     else:
