@@ -11,7 +11,8 @@ email info@florianhofer.it
 '''
 
 import unittest
-
+import filecmp
+import autogen
 
 class Test(unittest.TestCase):
 
@@ -24,8 +25,13 @@ class Test(unittest.TestCase):
         pass
 
 
-    def testName(self):
-        pass
+    def testOutput(self):
+        ''' Test generated export output with the ServerRoom export example '''
+
+        autogen.main('')
+        
+        filecmp.clear_cache()        
+        assert(filecmp.cmp('Test_Server_Room.exp', 'Test_Server_Room_expected.exp', shallow=False))
 
 
 if __name__ == "__main__":
