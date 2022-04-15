@@ -22,7 +22,7 @@
 	</symbol-info>
 	<interface>
 		<![CDATA[PROGRAM TestCase
-(* Created by FlorianH 05.08.2016, Modified by FlorianH 05.07.2018 *)
+(* Created by FlorianH 05.08.2016, Modified by FlorianH 15.04.2022 *)
 (* Changed from FB to Program on 02.04.2017 *)
 VAR_INPUT
 	(* Generic Parameters for calls *)
@@ -167,13 +167,8 @@ CASE tCase^.State AND 16#F0 OF
 											tCase^.State := (tCase^.State AND 16#F0) + sT_PASS;
 											RetVal := sT_PASS;
 										ELSE
-											(* Clean assert memory *)
+											(* Clean assert memory and reenter for next step *)
 											SysMemSet ( ADR(tCase^.AssertStats), 0, SIZEOF(tCase^.AssertStats));
-											
-											(* Store Test starting time *)
-											tCase^.StartTime := TIME();
-											tCase^.ExecCounter := 1;
-
 											RetVal := sT_RUN;
 										END_IF
 									ELSE
