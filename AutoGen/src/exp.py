@@ -19,14 +19,9 @@ if __name__ == '__main__':
 class ExportWriter:
     """Common test export-import writer class"""
     
-    def __init__(self, fileName, extension='.txt'):
+    def __init__(self, fileName='TestFile', extension='.txt'):
         """Initialize instance and open output file"""
-        try:
-            self.testFile = open(fileName + extension, "w", encoding="utf-8", newline="\r\n")
-        except:
-            print ("Unable to open file ' + fileName + ' for write")
-            raise FileNotFoundError
-
+        self._fileName = fileName + extension
         self._indent = 0;
 
     def _write(self, text, indent=-1):
@@ -39,12 +34,22 @@ class ExportWriter:
             self.testFile.write("    ")
             
         self.testFile.write(text)
+
+    def open(self):
+        """ Open file """
+        try:
+            self.testFile = open(self._fileName, "w", encoding="latin-1", errors="replace", newline="\r\n")
+        except:
+            print ("Unable to open file ' + fileName + ' for write")
+            raise FileNotFoundError
+            raise
         
     def close(self):
         """Close test file"""
         self.testFile.close()
         
     def __enter__(self):
+        self.open()
         return self
     
     def __exit__(self, exc_type, exc_val, exc_tb):
@@ -192,9 +197,9 @@ class ExpWriter(ExportWriter):
         
         print ("Create state machine for testing...\n")
 
-        self._indent = 1;
         self._write("testInit('" + test.testName[:TEST_NAME_MAX] + "', NoOfTests);\n\n")
         self._write('CASE _tls_ OF\n')
+        self._indent = 1;
 
         ''' Write State Code '''
 
@@ -245,10 +250,21 @@ class ExpWriter(ExportWriter):
                 self._write(test.instanceName + '(\n')
         
                 self._indent+=1
+                text = '' 
+                generator = False
                 for varType in test.varDefs[TEST_INPUT]:
+                    if text: 
+                        text += ',\n'
+                        self._write(text)
+
+                    if generator:
+                        self._indent-=1
+                        
                     text = varType[VAR_NAME] + ' := '
                     #TODO: for now only supports one generator per variable per test
+
                     generator = next((item for item in test.generators if item[VAR_NAME] == varType[VAR_NAME]), None)
+
                     if generator:
                         text += 'SEL( _tlt_ <> ' + str(generator[VAR_TEST]) + ', testGenArray(ADR(' + generator[VAR_REF] + '),SIZEOF(' + generator[VAR_REF] + ')),\n'
                         self._write(text)
@@ -257,11 +273,11 @@ class ExpWriter(ExportWriter):
                     text += 'ptrVars^.' + varType[VAR_NAME]
                     if generator:
                         text += ')'
-                    text += '\n'
-                    self._write(text)
-                    if generator:
-                        self._indent-=1
     
+                self._write(text + '\n')
+                if generator:
+                    self._indent-=1
+
                 self._write(');\n')
                 self._write('\n', indent=0)
                 self._indent-=1
@@ -297,9 +313,8 @@ class ExpWriter(ExportWriter):
                 
                 self._write('Pass := TRUE;\n')
 
-        self._write(' END_CASE\n', indent=1)
-            
         self._indent=0
+        self._write('END_CASE\n')
         
     def _createTestDUT(self, varDefs, testName):
         """Create test variable data type for the test parameter table"""
