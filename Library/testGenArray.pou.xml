@@ -6,7 +6,7 @@
 	<flags>59392</flags>
 	<interface>
 		<![CDATA[FUNCTION testGenArray : REAL
-(* Created by FlorianH 24.05.2017, Modified by FlorianH 12.06.2017 *)
+(* Created by FlorianH 24.05.2017, Modified by FlorianH 15.04.2022 *)
 (* Generates arreys or values for parametrized tests, sometimes Real type works for both *)
 VAR_INPUT
 	arrayAdr: POINTER TO REAL;
@@ -32,14 +32,15 @@ END_VAR
 		<body>
 			<![CDATA[(* pretests of array *)
 elmCount := arraySze / SIZEOF(arraySze);
-IF elmCount < 3 OR arrayAdr =0 OR arraySze MOD SIZEOF(arraySze) <> 0 THEN
+IF elmCount < 3 OR arrayAdr = 0 OR arraySze MOD SIZEOF(arraySze) <> 0 THEN
 	testGenArray := -1;
 	RETURN;
 END_IF
 
 arrDint := arrayAdr;
 
-IF arrDint^ > 6 THEN
+(* transform first element selecting mode to DINT if it is real *)
+IF arrDint^ > tTupDint THEN
 	arrDint^ := REAL_TO_DINT(arrayAdr^);
 END_IF
 
@@ -117,20 +118,22 @@ CASE arrDint^ OF
 				arrReal := arrReal + SIZEOF (arrReal);
 				rLimit2 := arrReal^;				(* data value *)
 				dRange := testTime();
-				counter := 2;
-				WHILE dLimit2 < dRange AND counter < elmCount -1 DO
+				counter := 3;
+				REPEAT
 					dLimit1 := dLimit2;
-					rLimit1 := dLimit2;
+					rLimit1 := rLimit2;
 					arrReal := arrReal + SIZEOF (arrayAdr);
 					dLimit2 := REAL_TO_DINT(arrReal^); (* time value *)
 					arrReal := arrReal + SIZEOF (arrReal);
 					rLimit2 := arrReal^;				(* data value *)
 					counter := counter + 2;
-				END_WHILE;
+				UNTIL dLimit2 > dRange OR counter >= elmCount END_REPEAT;
 
-				rRange := (rLimit2-rLimit1)/(dLimit2-dLimit1);
-				testGenArray := MIN (rLimit1 + rRange * (dRange - dLimit1), rLimit2);
-
+				rRange := (rLimit2-rLimit1)/MAX(dLimit2-dLimit1,1);
+				testGenArray := MIN (rLimit1 + rRange * MAX(dRange - dLimit1, 0), rLimit2);
+				IF rRange < 0 THEN (* Limit for descending values *)
+					testGenArray := MAX (rLimit2, testGenArray);
+				END_IF
 	tTupDint : ;
 END_CASE
 
