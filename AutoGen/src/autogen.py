@@ -23,7 +23,7 @@ def main(argv):
 	Read test Workbook and generate test cases/import for the IEC61131-3
 	""" 
 	
-	workBook = Workbook('test_unit.xlsx')
+	workBook = Workbook('test_unit.xls')
 	wbkiter = iter(workBook)
 	
 	#iterate though sheets
