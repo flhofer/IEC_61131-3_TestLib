@@ -130,9 +130,11 @@ CASE arrDint^ OF
 				UNTIL dLimit2 > dRange OR counter >= elmCount END_REPEAT;
 
 				rRange := (rLimit2-rLimit1)/MAX(dLimit2-dLimit1,1);
-				testGenArray := MIN (rLimit1 + rRange * MAX(dRange - dLimit1, 0), rLimit2);
+				testGenArray := rLimit1 + rRange * MAX(dRange - dLimit1, 0);
 				IF rRange < 0 THEN (* Limit for descending values *)
 					testGenArray := MAX (rLimit2, testGenArray);
+				ELSE
+					testGenArray := MIN (rLimit1, testGenArray);
 				END_IF
 	tTupDint : ;
 END_CASE
