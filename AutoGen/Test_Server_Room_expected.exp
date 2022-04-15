@@ -15,7 +15,7 @@ VAR CONSTANT
         ( testtime :=  0 ),
         
         (* Test case 2 *)
-        ( testtime :=    0, Run := 1, ALight := 0, AVoice := 0 ),
+        ( testtime := 0, Run := 1, ALight := 0, AVoice := 0 ),
         ( testtime := 1000, Run := 1, ALight := 1, AVoice := 0 ),
         ( testtime := 2000, Run := 1, ALight := 1, AVoice := 1 ),
         ( testtime := 3000, Run := 1, ALight := 0, AVoice := 0 );
@@ -26,7 +26,7 @@ END_VAR
 VAR
     ptrVars : POINTER TO Vars_Test_Server_Room;
     Room : SERVER_ROOM;
-    Array1 : ARRAY[0..8] OF REAL := tTupReal, 0, 22.1  , 1000, 23.1, 2000, 25.1, 3000, 22.0;
+    Array1 : ARRAY[0..8] OF REAL := tTupReal, 0, 22.1, 1000, 23.1, 2000, 25.1, 3000, 22.0;
 END_VAR
 (* @END_DECLARATION := '0' *)
 testInit('Test_Serve', NoOfTests);
@@ -39,7 +39,7 @@ CASE _tls_ OF
                 IF _tlt_ = 1 THEN
                     testParam(pSTEPS, 3);
                 ELSE
-                    testParam(pSteps, 4);
+                    testParam(pSTEPS, 4);
                 END_IF
 
     sT_RUN:    (* State Run *)
