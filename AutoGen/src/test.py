@@ -15,27 +15,23 @@ from settings import *
 #TODO: mutate to data object/class
 class Test:
     """Test object that contains information on a test POU""" 
-
-    testName = ''
-    fbName = ''
-    instanceName = ''
-    maxSteps = 1
-
-    ''' Test data storage '''
-    varDefs = { TEST_TIME: {},  TEST_OUTPUT: [], TEST_INPUT : [] }
-    stateCode = []  # TODO: for now only single Init
-    runSequences = []
-
-    ''' Parsing results '''
-    constants = []
-    variables = []
-    generators = []
         
-    def __init__(self, testName = 'DummyTest', instanceName = 'TestInst', fbName=''):
+    def __init__(self, testName = 'DummyTest', instanceName = 'TestInst', fbName=''): 
         """Intialise new test object"""
         self.testName = testName 
         self.instanceName = instanceName
         self.fbName = fbName
+        self.maxSteps = 1
+    
+        ''' Test data storage '''
+        self.varDefs = { TEST_TIME: {},  TEST_OUTPUT: [], TEST_INPUT : [] }
+        self.stateCode = []  # TODO: for now only single Init
+        self.runSequences = []
+    
+        ''' Parsing results '''
+        self.constants = []
+        self.variables = []
+        self.generators = []
     
     def appendOutputType(self, varDesc ):
         """ Add a output variable to variable descriptors """
