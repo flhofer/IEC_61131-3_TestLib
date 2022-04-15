@@ -1,6 +1,5 @@
 import dde_client as ddec
-import time
-
+import os
 
 class IDEConnect():
 
@@ -16,13 +15,30 @@ class IDEConnect():
 class CoDeSysConnect(IDEConnect):
     ''' Codesys Connector class '''
     
+    mainPath = 'c:\\Bachmann\\M1sw\\mplc3'
     mainEx = 'M-PLC'
 
-    def __init__(self, prgFile='Sample1.pro'):
+    def __init__(self, prgFile):
         ''' Setup main '''
         self._prgFile = prgFile
-        super.__init__()
+        super().__init__()
+
+    def runTest(self, fileList):
         
+        path = os.getcwd()
+        with open('runTest.cmd', 'w', encoding='cp1252', newline='\r\n') as f:
+            f.write('query off ok\n')
+            f.write('project import ')
+            files = ''
+            for file in fileList:
+                files += path + '\\' + file + ' ' 
+
+            f.write(files + '\n')
+            f.write('online login\n')
+            f.write('online run\n')
+        
+        retVal = os.system(self.mainPath + '\\' + self.mainEx + ' /cmd ' + path + '\\runtest.cmd ' + self._prgFile )
+
     def connect(self):
         ''' Connect to IDE and announce symbols '''
         self._client = ddec.DDEClient(self.mainEx, self._prgFile)
