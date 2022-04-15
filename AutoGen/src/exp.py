@@ -232,7 +232,7 @@ class ExpWriter(ExportWriter):
                 if selSteps:
                     self._write('ELSE\n');
                     self._indent+=1
-                self._write('testParam(pSteps, '+ str(test.maxSteps) +');\n')
+                self._write('testParam(pSTEPS, '+ str(test.maxSteps) +');\n')
                 if selSteps:
                     self._indent-=1
                     self._write('END_IF\n');
