@@ -1,14 +1,4 @@
-TYPE myTestData
-STRUCT
-    tim : DINT;
-    In1 : BOOL;
-    In2 : BOOL;
-    Out1: BOOL;
-    Out2: BOOL;
-END_STRUCT
-END_TYPE
-
-FUNCTION_BLOCK myTestBlock1
+FUNCTION_BLOCK TestExample
 
 CONST
     (* ------------- STATE MACHINE ------------- *)
@@ -38,7 +28,6 @@ CONST
     sTC_START     :=16#30;
     sTC_RUN         :=16#40;
 
-
     (* Test Case Shutdown *)
     sTC_ABORT     :=16#80;
     sTC_STOP     :=16#90;
@@ -49,28 +38,42 @@ CONST
     sTC_PASS     :=16#C0;
     sTC_FAIL     :=16#D0;
     sTC_ERROR     :=16#E0;
+    
+    NoOfTests := 1;
 END_CONST
 
+VAR_OUTPUT
+    PASS: BOOL;
+END_VAR
+
 VAR
-    ret : DINT ;    
+    ret : DINT;
+    TestInstance: TON;    
 END_VAR
 
 BEGIN
 
-ret := testInit( TestName := 'PrimaryTest', Count := 1);
+ret := testInit( TestName := 'TestName', Count := NoOfTests);
 
 CASE _tl_global._tls OF
+    sT_INIT: // State test initialize
+        ;
 
-    sT_RUN:
-        ret := assertTrue(Value := TRUE, Mode := _tl_const.mAT, Delay := 0);
-        ret := assertTrue(Value := FALSE, Mode := _tl_const.mBefore, Delay := 1000);
-        ret := assertTrue(Value := TRUE, Mode := _tl_const.mAfter, Delay := 0);
+    sT_RUN:  // State test run(ning)
+        TestInstance (IN := TRUE, PT := T#1s );          
+        ret := assertTrue(Value := TRUE, Mode := _tl_const.mVFY, Delay := 1000);
 
+    sTC_PASS:// State test case pass (all tests)
+        Pass := TRUE;
+        
+    sTC_FAIL:// State test case fail (all tests)
+        ;
+        
 END_CASE;
 
 END_FUNCTION_BLOCK
 
-DATA_BLOCK myTestData1 myTestBlock1
+DATA_BLOCK TestExample1 TestExample
 
 BEGIN
 

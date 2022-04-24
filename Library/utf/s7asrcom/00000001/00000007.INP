@@ -4,4 +4,7 @@ _SysMemSet
 _tl_testCase_data
 _tl_testCase_prg_util
 _tl_asserts
-MyTest
+
+// Your test cases here
+TestExample
+TestServerRoom

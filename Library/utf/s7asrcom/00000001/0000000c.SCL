@@ -1,0 +1,83 @@
+FUNCTION_BLOCK Server_Room
+(* Created 05.08.16 by FlorianH *)
+(* Sets alarms on outputs if temperature gets too high *)
+VAR_INPUT
+    Run: BOOL;
+    Temp: REAL;
+END_VAR
+VAR_OUTPUT
+    ALight : BOOL;
+    AVoice : BOOL;
+END_VAR
+
+BEGIN
+
+IF Run THEN
+    Alight := (Alight OR Temp > 23.0) AND Temp > 22.0;
+    AVoice := (AVoice OR Temp > 25.0) AND Temp > 24.0;
+ELSE
+    ALight := FALSE;
+    AVoice := FALSE;
+END_IF;
+
+END_FUNCTION_BLOCK
+
+
+FUNCTION_BLOCK TestServerRoom
+
+CONST
+    (* States for the state machines, Test case and test *)
+    sT_INIT         :=16#01;
+    sT_RUN         :=16#04;
+    sTC_PASS     :=16#C0;
+    sTC_FAIL     :=16#D0;
+
+    NoOfTests := 3;
+END_CONST
+
+VAR_OUTPUT
+    PASS: BOOL;
+END_VAR
+
+VAR
+    ret : DINT;
+    Room: Server_Room;
+        
+    TestTemperatures : ARRAY [1..NoOfTests] OF REAL := 22.1 , 23.1 , 25.1;
+    TestVoice : ARRAY [1..NoOfTests] OF BOOL := FALSE, FALSE, TRUE;
+    TestLight : ARRAY [1..NoOfTests] OF BOOL := FALSE, TRUE, TRUE;
+END_VAR
+
+BEGIN
+
+ret := testInit( TestName := 'TestServerR', Count := NoOfTests);
+
+CASE _tl_global._tls OF
+
+    sT_INIT:    (* State Init *)
+                Room ( Run := TRUE, Temp:= 20.1);
+
+    sT_RUN:        (* State Run *)
+                Room( Run := TRUE, Temp := TestTemperatures[_tl_global._tlt]);
+
+                ret := assertEquals( Value1 := Room.ALight, Value2:= TestLight[_tl_global._tlt],
+                        Mode := _tl_const.mVFY, Delay := 1000 );
+
+                ret := assertEquals( Value1 := Room.AVoice, Value2 := TestVoice[_tl_global._tlt],
+                        Mode := _tl_const.mVFY, Delay := 1000 );
+
+    sTC_PASS:    (* State Case Pass *)
+                Pass := TRUE;
+
+    sTC_FAIL:    (* State Fail *)
+                ;
+                
+END_CASE;
+
+END_FUNCTION_BLOCK
+
+DATA_BLOCK TestServerRoom1 TestServerRoom
+
+BEGIN
+
+END_DATA_BLOCK
