@@ -54,10 +54,14 @@ VAR_INPUT
     Parm1 : DWORD;
     Parm2 : DWORD;
     Parm1b AT Parm1 : STRUCT
-            bSign : BOOL;
-            bRange : BOOL;
-            bAfter : BOOL;
+            b7 :BOOL;
+            b6 :BOOL;
+            b5 :BOOL;
+            b4 :BOOL;
             bBefore : BOOL;
+            bAfter : BOOL;
+            bRange : BOOL;
+            bSign : BOOL;
             (* Warn! these are the bits controlling ranges *) 
             END_STRUCT;
     (* these parameters may be reused as variables inside the code, BEWARE *)
