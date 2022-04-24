@@ -1,0 +1,60 @@
+FUNCTION_BLOCK SysMemSet
+TITLE = 'System memory set function'
+VERSION : '1.0'
+AUTHOR  : FlorianH
+NAME    : MEMSET
+FAMILY  : APTest
+
+VAR_INPUT
+    pDest : POINTER;  (* buffer *)
+        _pt AT pDest : STRUCT
+            DBNr : WORD;
+            Adr : DWORD;
+        END_STRUCT;    
+    bCharacter   : BYTE;   (* Byte To write *)
+    iCount       : INT;    (* Number of characters to preset *)
+END_VAR
+
+VAR_OUTPUT
+    _INIT : BOOL := FALSE;
+END_VAR
+
+VAR_TEMP
+    ptw     : INT;      //ptw : POINTER TO DWORD;
+    temp    : DWORD;
+    end, end32 : DWORD;
+    tPT : INT;
+END_VAR
+
+BEGIN
+
+//_INIT := FALSE;
+tPT := DWORD_TO_INT(SHR(IN:=SHL(IN:=_pt.Adr,N:=8),N:=11));
+
+(* this routine uses 32 bit access to gain speed *)
+(* first access bytes till pointer is aligned for 32 bit access *)
+temp := INT_TO_DWORD(tpt);
+end := DINT_TO_DWORD(DWORD_TO_DINT(temp) + iCount);
+end32 := DINT_TO_DWORD(DWORD_TO_DINT(temp) - 4);    //end32 := end - 3;
+WHILE (tpt < DWORD_TO_DINT(end)) AND (DWORD_TO_DINT((temp AND 16#00000003)) > 0) DO
+    WORD_TO_BLOCK_DB(_pt.DBNr).DB[tPT] := bCharacter;
+    tpt := tpt + 1;
+    temp := DINT_TO_DWORD(DWORD_TO_DINT(temp) + 1);
+END_WHILE;
+(* pointer is aligned, now copy 32 bits at a time *)
+ptw := tpt;
+temp := SHL(IN:=BYTE_TO_DWORD(bCharacter),N:=24) OR SHL(IN:=BYTE_TO_DWORD(bCharacter),N:=16) OR SHL(IN:=BYTE_TO_DWORD(bCharacter),N:=8) OR BYTE_TO_DWORD(bCharacter);
+WHILE ptw < DWORD_TO_DINT(end32) DO
+    WORD_TO_BLOCK_DB(_pt.DBNr).DD[ptw] := temp;
+    ptw := ptw + 4;
+END_WHILE;
+(* copy the remaining bytes in byte mode *)
+tpt := ptw;
+WHILE tpt < DWORD_TO_DINT(end) DO
+    WORD_TO_BLOCK_DB(_pt.DBNr).DB[tPT] := bCharacter;
+    tpt := tpt + 1;
+END_WHILE;
+
+_INIT := TRUE;
+
+END_FUNCTION_BLOCK

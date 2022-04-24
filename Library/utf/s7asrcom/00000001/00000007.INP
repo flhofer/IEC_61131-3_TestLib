@@ -1,0 +1,10 @@
+{SCL_OverwriteBlocks := 'y' ; SCL_CreateDebugInfo := 'y'}
+_tl_globals_constants
+_SysMemSet
+_tl_testCase_data
+_tl_testCase_prg_util
+_tl_asserts
+
+// Your test cases here
+TestExample
+TestServerRoom
